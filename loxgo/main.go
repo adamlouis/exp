@@ -400,6 +400,8 @@ func isAlphaNumeric(c byte) bool {
 	return isAlpha(c) || isDigit(c)
 }
 
+type Expr struct{}
+
 // abstract class Expr {
 //   static class Binary extends Expr {
 //     Binary(Expr left, Token operator, Expr right) {

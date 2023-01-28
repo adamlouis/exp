@@ -14,7 +14,7 @@ func main() {
 	}
 	outputDir := os.Args[1]
 
-	if err := defineAst(outputDir, "Expr", []string{
+	if err := defineAstJava(outputDir, "Expr", []string{
 		"Binary   : Expr left, Token operator, Expr right",
 		"Grouping : Expr expression",
 		"Literal  : Object value",
@@ -30,7 +30,7 @@ func writeln(w io.Writer, s string) error {
 	return err
 }
 
-func defineAst(outputDir string, baseName string, types []string) error {
+func defineAstJava(outputDir string, baseName string, types []string) error {
 	path := outputDir + "/" + baseName + ".java"
 
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0600)
@@ -59,7 +59,7 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	for _, t := range types {
 		className := strings.TrimSpace(strings.Split(t, ":")[0])
 		fields := strings.TrimSpace(strings.Split(t, ":")[1])
-		if err := defineTypeW(f, baseName, className, fields); err != nil {
+		if err := defineTypeJavaW(f, baseName, className, fields); err != nil {
 			return err
 		}
 	}
@@ -71,7 +71,7 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	return nil
 }
 
-func defineTypeW(w io.Writer, baseName string, className string, fieldList string) error {
+func defineTypeJavaW(w io.Writer, baseName string, className string, fieldList string) error {
 	if err := writeln(w, "  static class "+className+" extends "+baseName+" {"); err != nil {
 		return err
 	}
