@@ -94,6 +94,10 @@ func (p *Parser) primary() Expr {
 		p.consume(TokenType_RIGHT_PAREN, "Expect ')' after expression.")
 		//   return new Expr.Grouping(expr);
 	}
+
+	// TODO:
+	// - finishing parsing expressions: https://craftinginterpreters.com/parsing-expressions.html#syntax-errors
+	// - generate AST for Go ... using Java reference & requirements above
 }
 
 func (p *Parser) match(types ...TokenType) bool {
