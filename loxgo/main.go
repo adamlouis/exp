@@ -399,3 +399,22 @@ func isAlpha(c byte) bool {
 func isAlphaNumeric(c byte) bool {
 	return isAlpha(c) || isDigit(c)
 }
+
+// abstract class Expr {
+//   static class Binary extends Expr {
+//     Binary(Expr left, Token operator, Expr right) {
+//       this.left = left;
+//       this.operator = operator;
+//       this.right = right;
+//     }
+
+//     final Expr left;
+//     final Token operator;
+//     final Expr right;
+//   }
+
+//   // Other expressions...
+// }
+
+// struct Expr {}
+// struct Expr {}
