@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+type ExprType struct {
+	Name   string
+	Fields []string
+}
+
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Println("usage: genast <output directory>")
@@ -14,11 +19,22 @@ func main() {
 	}
 	outputDir := os.Args[1]
 
-	if err := defineAstJava(outputDir, "Expr", []string{
-		"Binary   : Expr left, Token operator, Expr right",
-		"Grouping : Expr expression",
-		"Literal  : Object value",
-		"Unary    : Token operator, Expr right",
+	if err := genAST(outputDir, "Expr", []ExprType{
+		{"Binary", []string{
+			"Left Expr",
+			"Operator Token",
+			"Right Expr",
+		}},
+		{"Grouping", []string{
+			"Expression Expr",
+		}},
+		{"Literal", []string{
+			"Value any",
+		}},
+		{"Unary", []string{
+			"Operator Token",
+			"Right Expr",
+		}},
 	}); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(64)
@@ -30,82 +46,98 @@ func writeln(w io.Writer, s string) error {
 	return err
 }
 
-func defineAstJava(outputDir string, baseName string, types []string) error {
-	path := outputDir + "/" + baseName + ".java"
+func genAST(outputDir string, baseName string, types []ExprType) error {
+	path := outputDir + "/" + strings.ToLower(baseName) + ".go"
 
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0600)
+	_ = os.RemoveAll(path)
+
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	if err = writeln(f, "package com.craftinginterpreters.lox;"); err != nil {
-		return err
-	}
-	if err = writeln(f, ""); err != nil {
-		return err
-	}
-	if err = writeln(f, "import java.util.List;"); err != nil {
-		return err
-	}
-	if err = writeln(f, ""); err != nil {
-		return err
-	}
-	if err = writeln(f, "abstract class "+baseName+" {"); err != nil {
+	if err = writeln(f, "package main"); err != nil {
 		return err
 	}
 
-	// The AST classes.
+	if err = writeln(f, "type "+baseName+" struct {"); err != nil {
+		return err
+	}
+
 	for _, t := range types {
-		className := strings.TrimSpace(strings.Split(t, ":")[0])
-		fields := strings.TrimSpace(strings.Split(t, ":")[1])
-		if err := defineTypeJavaW(f, baseName, className, fields); err != nil {
+		if err = writeln(f, fmt.Sprintf("	%s *%s", t.Name, t.Name)); err != nil {
 			return err
 		}
 	}
-
 	if err = writeln(f, "}"); err != nil {
 		return err
 	}
 
-	return nil
+	for _, t := range types {
+		if err = writeln(f, "type "+t.Name+" struct {"); err != nil {
+			return err
+		}
+		for _, field := range t.Fields {
+			if err = writeln(f, field); err != nil {
+				return err
+			}
+		}
+		if err = writeln(f, "}"); err != nil {
+			return err
+		}
+	}
+
+	return genVisitor(f, baseName, types)
 }
 
-func defineTypeJavaW(w io.Writer, baseName string, className string, fieldList string) error {
-	if err := writeln(w, "  static class "+className+" extends "+baseName+" {"); err != nil {
+func genVisitor(w io.Writer, baseName string, types []ExprType) error {
+
+	if err := writeln(w, `type Visitor interface {`); err != nil {
 		return err
 	}
-
-	// Constructor.
-	if err := writeln(w, "    "+className+"("+fieldList+") {"); err != nil {
-		return err
-	}
-
-	// Store parameters in fields.
-	fields := strings.Split(fieldList, ",")
-	for _, field := range fields {
-		name := strings.Split(field, " ")[1]
-		if err := writeln(w, "      this."+name+" = "+name+";"); err != nil {
+	for _, t := range types {
+		if err := writeln(w, "	Visit"+t.Name+"(expr *"+t.Name+") any"); err != nil {
 			return err
 		}
 	}
-
-	if err := writeln(w, "    }"); err != nil {
+	if err := writeln(w, `}`); err != nil {
 		return err
 	}
 
-	// Fields.
-	if err := writeln(w, ""); err != nil {
+	if err := writeln(w, "func (e *"+baseName+") accept(v Visitor) any {"); err != nil {
 		return err
 	}
-	for _, field := range fields {
-		if err := writeln(w, "    final "+field+";"); err != nil {
+	for _, t := range types {
+		if err := writeln(w, "if e."+t.Name+" != nil {"); err != nil {
+			return err
+		}
+		if err := writeln(w, "	return e."+t.Name+".accept(v)"); err != nil {
+			return err
+		}
+		if err := writeln(w, "}"); err != nil {
 			return err
 		}
 	}
-
-	if err := writeln(w, "  }"); err != nil {
+	if err := writeln(w, "	return nil"); err != nil {
 		return err
+	}
+	if err := writeln(w, "}"); err != nil {
+		return err
+	}
+
+	for _, t := range types {
+		if err := writeln(w, "func (e *"+t.Name+") accept(visitor Visitor) any {"); err != nil {
+			return err
+		}
+
+		if err := writeln(w, "	return visitor.Visit"+t.Name+"(e)"); err != nil {
+			return err
+		}
+
+		if err := writeln(w, "}"); err != nil {
+			return err
+		}
 	}
 	return nil
 }

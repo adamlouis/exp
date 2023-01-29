@@ -116,9 +116,8 @@ func (l *Lox) run(source string) error {
 		return nil
 	}
 
-	// TODO(adam): implement code generator & print AST
-	// System.out.println(new AstPrinter().print(expression));
-	fmt.Println(expression)
+	past := &ASTPrinter{}
+	fmt.Println(past.print(*expression))
 	return nil
 }
 
