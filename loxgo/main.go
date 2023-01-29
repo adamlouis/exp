@@ -96,7 +96,7 @@ func (l *Lox) reportErr(line int, message string) {
 }
 
 func (l *Lox) report(line int, where string, message string) {
-	fmt.Printf("[line %d] Error `%s`: `%s`", line, where, message)
+	fmt.Printf("[line %d] Error%s: %s\n", line, where, message)
 	l.hadError = true
 }
 
@@ -112,10 +112,11 @@ func (l *Lox) run(source string) error {
 
 	// Stop if there was a syntax error.
 	if l.hadError {
-		return fmt.Errorf("syntax error")
+		// return fmt.Errorf("syntax error")
+		return nil
 	}
 
-	// TODO(adam): print AST
+	// TODO(adam): implement code generator & print AST
 	// System.out.println(new AstPrinter().print(expression));
 	fmt.Println(expression)
 	return nil
