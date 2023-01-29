@@ -59,7 +59,7 @@ func writeln(w io.Writer, s string) error {
 }
 
 func genAST(outputDir string, baseName string, types []ExprType) error {
-	path := outputDir + "/" + strings.ToLower(baseName) + ".go"
+	path := outputDir + "/" + strings.ToLower(baseName) + ".gen.go"
 
 	_ = os.RemoveAll(path)
 
