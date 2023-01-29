@@ -32,12 +32,14 @@ func main() {
 	switch len(os.Args) {
 	case 2:
 		if err := l.runFile(os.Args[1]); err != nil {
-			panic(err)
+			fmt.Println(err.Error())
+			os.Exit(1)
 		}
 		os.Exit(0)
 	case 1:
 		if err := l.runPrompt(); err != nil {
-			panic(err)
+			fmt.Println(err.Error())
+			os.Exit(1)
 		}
 		os.Exit(0)
 	default:
@@ -80,7 +82,7 @@ func (l *Lox) runPrompt() error {
 			return err
 		}
 		if isPrefix {
-			return fmt.Errorf("TODO: handle prefix at line: %s", line)
+			panic(fmt.Errorf("TODO: handle prefix at line: %s", line))
 		}
 		if err := l.run(string(line)); err != nil {
 			return err
@@ -94,24 +96,28 @@ func (l *Lox) reportErr(line int, message string) {
 }
 
 func (l *Lox) report(line int, where string, message string) {
-	fmt.Printf("[line %d] Error %s : %s", line, where, message)
+	fmt.Printf("[line %d] Error `%s`: `%s`", line, where, message)
 	l.hadError = true
 }
 
 func (l *Lox) run(source string) error {
-	scanner := &Scanner{
-		l:      l, // TODO(adam): don't pass parent down like this
-		source: source,
-	}
+	scanner := NewScanner(l, source)
 	tokens, err := scanner.scanTokens()
 	if err != nil {
 		return err
 	}
 
-	for _, token := range tokens {
-		fmt.Println(token)
+	parser := NewParser(l, tokens)
+	expression := parser.parse()
+
+	// Stop if there was a syntax error.
+	if l.hadError {
+		return fmt.Errorf("syntax error")
 	}
 
+	// TODO(adam): print AST
+	// System.out.println(new AstPrinter().print(expression));
+	fmt.Println(expression)
 	return nil
 }
 
@@ -184,7 +190,7 @@ func (t *Token) String() string {
 }
 
 type Scanner struct {
-	l       *Lox
+	lox     *Lox
 	source  string
 	tokens  []Token
 	start   int
@@ -192,8 +198,9 @@ type Scanner struct {
 	line    int
 }
 
-func NewScanner(source string) *Scanner {
+func NewScanner(lox *Lox, source string) *Scanner {
 	return &Scanner{
+		lox:     lox,
 		source:  source,
 		tokens:  []Token{},
 		start:   0,
@@ -278,7 +285,7 @@ func (s *Scanner) scanToken() error {
 		} else if isAlpha(c) {
 			s.identifier()
 		} else {
-			s.l.reportErr(s.line, "Unexpected character.")
+			s.lox.reportErr(s.line, "Unexpected character.")
 		}
 	}
 	return nil
@@ -333,7 +340,7 @@ func (s *Scanner) string() {
 	}
 
 	if s.isAtEnd() {
-		s.l.reportErr(s.line, "Unterminated string.")
+		s.lox.reportErr(s.line, "Unterminated string.")
 		return
 	}
 
@@ -399,24 +406,3 @@ func isAlpha(c byte) bool {
 func isAlphaNumeric(c byte) bool {
 	return isAlpha(c) || isDigit(c)
 }
-
-type Expr struct{}
-
-// abstract class Expr {
-//   static class Binary extends Expr {
-//     Binary(Expr left, Token operator, Expr right) {
-//       this.left = left;
-//       this.operator = operator;
-//       this.right = right;
-//     }
-
-//     final Expr left;
-//     final Token operator;
-//     final Expr right;
-//   }
-
-//   // Other expressions...
-// }
-
-// struct Expr {}
-// struct Expr {}

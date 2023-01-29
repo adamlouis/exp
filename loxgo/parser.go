@@ -1,18 +1,29 @@
 package main
 
 type Parser struct {
+	lox     *Lox
 	tokens  []Token
 	current int
 }
 
-func NewParser(tokens []Token) *Parser {
+func NewParser(l *Lox, tokens []Token) *Parser {
 	return &Parser{
+		lox:     l,
 		tokens:  tokens,
 		current: 0,
 	}
 }
 
-func (p *Parser) Expr() Expr {
+func (p *Parser) parse() *Expr {
+	defer func() {
+		_ = recover()
+	}()
+
+	ret := p.expression()
+	return &ret
+}
+
+func (p *Parser) expression() Expr {
 	return p.equality()
 }
 
@@ -22,7 +33,9 @@ func (p *Parser) equality() Expr {
 	for p.match(TokenType_BANG_EQUAL, TokenType_EQUAL_EQUAL) {
 		operator := p.previous() // Token
 		right := p.comparison()  // Expr
-		// 		  expr = new Expr.Binary(expr, operator, right);
+		expr = Expr{
+			Binary: &Binary{expr, operator, right},
+		}
 	}
 
 	return expr
@@ -34,7 +47,9 @@ func (p *Parser) comparison() Expr {
 	for p.match(TokenType_GREATER, TokenType_GREATER_EQUAL, TokenType_LESS, TokenType_LESS_EQUAL) {
 		operator := p.previous()
 		right := p.term()
-		//   expr = new Expr.Binary(expr, operator, right);
+		expr = Expr{
+			Binary: &Binary{expr, operator, right},
+		}
 	}
 
 	return expr
@@ -46,7 +61,9 @@ func (p *Parser) term() Expr {
 	for p.match(TokenType_MINUS, TokenType_PLUS) {
 		operator := p.previous()
 		right := p.factor()
-		//   expr = new Expr.Binary(expr, operator, right);
+		expr = Expr{
+			Binary: &Binary{expr, operator, right},
+		}
 	}
 
 	return expr
@@ -58,7 +75,9 @@ func (p *Parser) factor() Expr {
 	for p.match(TokenType_SLASH, TokenType_STAR) {
 		operator := p.previous()
 		right := p.unary()
-		//   expr = new Expr.Binary(expr, operator, right);
+		expr = Expr{
+			Binary: &Binary{expr, operator, right},
+		}
 	}
 
 	return expr
@@ -68,7 +87,9 @@ func (p *Parser) unary() Expr {
 	if p.match(TokenType_BANG, TokenType_MINUS) {
 		operator := p.previous()
 		right := p.unary()
-		//   return new Expr.Unary(operator, right);
+		return Expr{
+			Unary: &Unary{operator, right},
+		}
 	}
 
 	return p.primary()
@@ -76,28 +97,28 @@ func (p *Parser) unary() Expr {
 
 func (p *Parser) primary() Expr {
 	if p.match(TokenType_FALSE) {
-		// return new Expr.Literal(false)
+		return Expr{Literal: &Literal{Value: false}}
 	}
 	if p.match(TokenType_TRUE) {
-		// return new Expr.Literal(true)
+		return Expr{Literal: &Literal{Value: true}}
 	}
 	if p.match(TokenType_NIL) {
-		// return new Expr.Literal(null)
+		return Expr{Literal: &Literal{Value: nil}}
 	}
 
 	if p.match(TokenType_NUMBER, TokenType_STRING) {
-		//   return new Expr.Literal(previous().literal);
+		return Expr{Literal: &Literal{Value: p.previous().literal}}
 	}
 
 	if p.match(TokenType_LEFT_PAREN) {
 		expr := p.expression()
 		p.consume(TokenType_RIGHT_PAREN, "Expect ')' after expression.")
-		//   return new Expr.Grouping(expr);
+		return Expr{
+			Grouping: &Grouping{expr},
+		}
 	}
 
-	// TODO:
-	// - finishing parsing expressions: https://craftinginterpreters.com/parsing-expressions.html#syntax-errors
-	// - generate AST for Go ... using Java reference & requirements above
+	panic(p.error(p.peek(), "Expect expression."))
 }
 
 func (p *Parser) match(types ...TokenType) bool {
@@ -109,6 +130,29 @@ func (p *Parser) match(types ...TokenType) bool {
 	}
 	return false
 }
+
+func (p *Parser) consume(t TokenType, message string) Token {
+	if p.check(t) {
+		return p.advance()
+	}
+
+	panic(p.error(p.peek(), message))
+}
+
+func (p *Parser) error(token Token, message string) *ParseError {
+	p.lox.error(token, message)
+	return &ParseError{}
+}
+
+func (l *Lox) error(token Token, message string) {
+	if token.t == TokenType_EOF {
+		l.report(token.line, " at end", message)
+	} else {
+		l.report(token.line, " at '"+token.lexeme+"'", message)
+	}
+}
+
+type ParseError struct{}
 
 func (p *Parser) check(t TokenType) bool {
 	if p.isAtEnd() {
@@ -132,4 +176,27 @@ func (p *Parser) peek() Token {
 }
 func (p *Parser) previous() Token {
 	return p.tokens[p.current-1]
+}
+
+func (p *Parser) synchronize() {
+	p.advance()
+
+	for !p.isAtEnd() {
+		if p.previous().t == TokenType_SEMICOLON {
+			return
+		}
+
+		switch p.peek().t {
+		case TokenType_CLASS:
+		case TokenType_FUN:
+		case TokenType_VAR:
+		case TokenType_FOR:
+		case TokenType_IF:
+		case TokenType_WHILE:
+		case TokenType_PRINT:
+		case TokenType_RETURN:
+			return
+		}
+		p.advance()
+	}
 }
