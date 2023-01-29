@@ -28,7 +28,12 @@ var keywords = map[string]TokenType{
 }
 
 func main() {
-	l := &Lox{}
+	// take a pass at end to make java patterns idomatic go
+	l := &Lox{
+		interpreter: &Interpreter{},
+	}
+	l.interpreter.lox = l
+
 	switch len(os.Args) {
 	case 2:
 		if err := l.runFile(os.Args[1]); err != nil {
@@ -48,7 +53,9 @@ func main() {
 }
 
 type Lox struct {
-	hadError bool
+	interpreter     *Interpreter
+	hadError        bool
+	hadRuntimeError bool
 }
 
 func (l *Lox) runFile(path string) error {
@@ -67,6 +74,9 @@ func (l *Lox) runFile(path string) error {
 	}
 
 	if l.hadError {
+		os.Exit(65)
+	}
+	if l.hadRuntimeError {
 		os.Exit(65)
 	}
 	return nil
@@ -100,6 +110,11 @@ func (l *Lox) report(line int, where string, message string) {
 	l.hadError = true
 }
 
+func (l *Lox) runtimeError(v any, token Token) {
+	fmt.Printf("%v [line %d]\n", v, token.line)
+	l.hadRuntimeError = true
+}
+
 func (l *Lox) run(source string) error {
 	scanner := NewScanner(l, source)
 	tokens, err := scanner.scanTokens()
@@ -112,13 +127,10 @@ func (l *Lox) run(source string) error {
 
 	// Stop if there was a syntax error.
 	if l.hadError {
-		// return fmt.Errorf("syntax error")
 		return nil
 	}
 
-	past := &ASTPrinter{}
-	fmt.Println(past.print(*expression))
-	return nil
+	return l.interpreter.interpret(*expression)
 }
 
 type TokenType string
