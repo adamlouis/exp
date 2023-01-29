@@ -1,1 +1,1 @@
-https://craftinginterpreters.com/statements-and-state.html
+https://craftinginterpreters.com/statements-and-state.html#parsing-variables

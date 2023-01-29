@@ -21,14 +21,14 @@ type Unary struct {
 	Operator Token
 	Right    Expr
 }
-type Visitor interface {
+type VisitorExpr interface {
 	VisitBinary(expr *Binary) any
 	VisitGrouping(expr *Grouping) any
 	VisitLiteral(expr *Literal) any
 	VisitUnary(expr *Unary) any
 }
 
-func (e *Expr) accept(v Visitor) any {
+func (e *Expr) accept(v VisitorExpr) any {
 	if e.Binary != nil {
 		return e.Binary.accept(v)
 	}
@@ -43,15 +43,15 @@ func (e *Expr) accept(v Visitor) any {
 	}
 	return nil
 }
-func (e *Binary) accept(visitor Visitor) any {
+func (e *Binary) accept(visitor VisitorExpr) any {
 	return visitor.VisitBinary(e)
 }
-func (e *Grouping) accept(visitor Visitor) any {
+func (e *Grouping) accept(visitor VisitorExpr) any {
 	return visitor.VisitGrouping(e)
 }
-func (e *Literal) accept(visitor Visitor) any {
+func (e *Literal) accept(visitor VisitorExpr) any {
 	return visitor.VisitLiteral(e)
 }
-func (e *Unary) accept(visitor Visitor) any {
+func (e *Unary) accept(visitor VisitorExpr) any {
 	return visitor.VisitUnary(e)
 }

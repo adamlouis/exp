@@ -39,6 +39,18 @@ func main() {
 		fmt.Println(err.Error())
 		os.Exit(64)
 	}
+
+	if err := genAST(outputDir, "Stmt", []ExprType{
+		{"Expression", []string{
+			"Expression Expr",
+		}},
+		{"Print", []string{
+			"Expression Expr",
+		}},
+	}); err != nil {
+		fmt.Println(err.Error())
+		os.Exit(64)
+	}
 }
 
 func writeln(w io.Writer, s string) error {
@@ -92,8 +104,9 @@ func genAST(outputDir string, baseName string, types []ExprType) error {
 }
 
 func genVisitor(w io.Writer, baseName string, types []ExprType) error {
+	iname := "Visitor" + baseName
 
-	if err := writeln(w, `type Visitor interface {`); err != nil {
+	if err := writeln(w, `type `+iname+` interface {`); err != nil {
 		return err
 	}
 	for _, t := range types {
@@ -105,7 +118,7 @@ func genVisitor(w io.Writer, baseName string, types []ExprType) error {
 		return err
 	}
 
-	if err := writeln(w, "func (e *"+baseName+") accept(v Visitor) any {"); err != nil {
+	if err := writeln(w, "func (e *"+baseName+") accept(v "+iname+") any {"); err != nil {
 		return err
 	}
 	for _, t := range types {
@@ -127,7 +140,7 @@ func genVisitor(w io.Writer, baseName string, types []ExprType) error {
 	}
 
 	for _, t := range types {
-		if err := writeln(w, "func (e *"+t.Name+") accept(visitor Visitor) any {"); err != nil {
+		if err := writeln(w, "func (e *"+t.Name+") accept(visitor "+iname+") any {"); err != nil {
 			return err
 		}
 

@@ -14,13 +14,40 @@ func NewParser(l *Lox, tokens []Token) *Parser {
 	}
 }
 
-func (p *Parser) parse() *Expr {
+func (p *Parser) parse() []*Stmt {
+	ret := []*Stmt{}
 	defer func() {
 		_ = recover()
 	}()
 
-	ret := p.expression()
-	return &ret
+	for !p.isAtEnd() {
+		ret = append(ret, p.statement())
+	}
+
+	return ret
+}
+
+func (p *Parser) statement() *Stmt {
+	if p.match(TokenType_PRINT) {
+		return p.printStatement()
+	}
+	return p.expressionStatement()
+}
+
+func (p *Parser) printStatement() *Stmt {
+	value := p.expression()
+	p.consume(TokenType_SEMICOLON, "Expect ';' after value.")
+	return &Stmt{
+		Print: &Print{value},
+	}
+}
+
+func (p *Parser) expressionStatement() *Stmt {
+	expr := p.expression()
+	p.consume(TokenType_SEMICOLON, "Expect ';' after expression.")
+	return &Stmt{
+		Expression: &Expression{expr},
+	}
 }
 
 func (p *Parser) expression() Expr {

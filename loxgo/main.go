@@ -123,14 +123,14 @@ func (l *Lox) run(source string) error {
 	}
 
 	parser := NewParser(l, tokens)
-	expression := parser.parse()
+	statements := parser.parse()
 
 	// Stop if there was a syntax error.
 	if l.hadError {
 		return nil
 	}
 
-	return l.interpreter.interpret(*expression)
+	return l.interpreter.interpret(statements)
 }
 
 type TokenType string

@@ -4,24 +4,31 @@ import (
 	"fmt"
 )
 
-var _ = (Visitor)(&Interpreter{})
+var _ = (VisitorExpr)(&Interpreter{})
+var _ = (VisitorStmt)(&Interpreter{})
 
 type Interpreter struct {
 	lox *Lox
 }
 
-func (itrp *Interpreter) interpret(expression Expr) error {
+func (itrp *Interpreter) interpret(stmts []*Stmt) error {
 	var err error
 
 	defer func() {
 		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
 			itrp.lox.runtimeError(r, Token{})
 		}
 	}()
 
-	value := itrp.evaluate(&expression)
-	fmt.Println(stringify(value))
+	for _, stmt := range stmts {
+		itrp.execute(stmt)
+	}
 	return err
+}
+
+func (itrp *Interpreter) execute(stmt *Stmt) {
+	stmt.accept(itrp)
 }
 
 func (itrp *Interpreter) evaluate(expr *Expr) any {
@@ -157,4 +164,14 @@ func isTruthy(v any) bool {
 }
 func isNil(v any) bool {
 	return v == nil
+}
+
+func (itrp *Interpreter) VisitExpression(stmt *Expression) any {
+	itrp.evaluate(&stmt.Expression)
+	return nil
+}
+func (itrp *Interpreter) VisitPrint(stmt *Print) any {
+	v := itrp.evaluate(&stmt.Expression)
+	fmt.Println(stringify(v))
+	return nil
 }
