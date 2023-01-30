@@ -73,6 +73,10 @@ func main() {
 			"Params []*Token",
 			"Body []*Stmt",
 		}},
+		{"Return", []string{
+			"Keyword *Token",
+			"Value *Expr",
+		}},
 		{"Print", []string{
 			"Expression *Expr",
 		}},

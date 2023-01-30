@@ -3,17 +3,28 @@ package main
 var _ Callable = (*LoxFunction)(nil)
 
 type LoxFunction struct {
-	decl *Function
+	decl    *Function
+	closure *Environment
 }
 
-func NewLoxFunction(decl *Function) *LoxFunction {
+func NewLoxFunction(decl *Function, closure *Environment) *LoxFunction {
 	return &LoxFunction{
-		decl: decl,
+		decl:    decl,
+		closure: closure,
 	}
 }
 
-func (f *LoxFunction) Call(itrp *Interpreter, arguments []any) any {
-	env := NewEnvironmentFrom(itrp.globals)
+func (f *LoxFunction) Call(itrp *Interpreter, arguments []any) (ret any) {
+	env := NewEnvironmentFrom(f.closure)
+
+	defer func() {
+		if r := recover(); r != nil {
+			retex, ok := r.(ReturnException)
+			if ok {
+				ret = retex.Value
+			}
+		}
+	}()
 
 	for i := 0; i < len(f.decl.Params); i++ {
 		env.define(
@@ -23,7 +34,7 @@ func (f *LoxFunction) Call(itrp *Interpreter, arguments []any) any {
 	}
 
 	itrp.executeBlock(f.decl.Body, env)
-	return nil
+	return ret
 }
 
 func (c *LoxFunction) Arity() int {

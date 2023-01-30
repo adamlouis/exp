@@ -25,9 +25,7 @@ func NewInterpreter(lox *Lox) *Interpreter {
 	}
 }
 
-func (itrp *Interpreter) interpret(stmts []*Stmt) error {
-	var err error
-
+func (itrp *Interpreter) interpret(stmts []*Stmt) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
@@ -276,7 +274,21 @@ func (itrp *Interpreter) VisitWhile(stmt *While) any {
 }
 
 func (itrp *Interpreter) VisitFunction(stmt *Function) any {
-	f := NewLoxFunction(stmt)
+	f := NewLoxFunction(stmt, itrp.env)
 	itrp.env.define(stmt.Name.lexeme, f)
 	return nil
+}
+
+func (itrp *Interpreter) VisitReturn(stmt *Return) any {
+	var value any
+
+	if stmt.Value != nil {
+		value = itrp.evaluate(stmt.Value)
+	}
+
+	panic(ReturnException{Value: value})
+}
+
+type ReturnException struct {
+	Value any
 }

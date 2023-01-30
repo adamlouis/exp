@@ -24,9 +24,7 @@ func (p *Parser) parse() []*Stmt {
 	return ret
 }
 
-func (p *Parser) declaration() *Stmt {
-	var ret *Stmt
-
+func (p *Parser) declaration() (ret *Stmt) {
 	defer func() {
 		if r := recover(); r != nil {
 			p.synchronize()
@@ -93,6 +91,9 @@ func (p *Parser) statement() *Stmt {
 	}
 	if p.match(TokenType_IF) {
 		return p.ifStatement()
+	}
+	if p.match(TokenType_RETURN) {
+		return p.returnStatement()
 	}
 	if p.match(TokenType_WHILE) {
 		return p.whileStatement()
@@ -184,6 +185,16 @@ func (p *Parser) whileStatement() *Stmt {
 	return &Stmt{
 		While: &While{condition, body},
 	}
+}
+func (p *Parser) returnStatement() *Stmt {
+	keyword := p.previous()
+	var value *Expr
+	if !p.check(TokenType_SEMICOLON) {
+		value = p.expression()
+	}
+
+	p.consume(TokenType_SEMICOLON, "Expect ';' after return value.")
+	return &Stmt{Return: &Return{keyword, value}}
 }
 
 func (p *Parser) printStatement() *Stmt {

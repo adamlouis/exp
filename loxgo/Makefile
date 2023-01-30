@@ -1,4 +1,8 @@
 
+build:
+	mkdir build
+	go build -o build/lox
+
 run:
 	go run .
 

@@ -5,6 +5,7 @@ type Stmt struct {
 	Expression *Expression
 	If         *If
 	Function   *Function
+	Return     *Return
 	Print      *Print
 	Var        *Var
 	While      *While
@@ -22,6 +23,10 @@ type Function struct {
 	Name   *Token
 	Params []*Token
 	Body   []*Stmt
+}
+type Return struct {
+	Keyword *Token
+	Value   *Expr
 }
 type Print struct {
 	Expression *Expr
@@ -41,6 +46,7 @@ type VisitorStmt interface {
 	VisitExpression(expr *Expression) any
 	VisitIf(expr *If) any
 	VisitFunction(expr *Function) any
+	VisitReturn(expr *Return) any
 	VisitPrint(expr *Print) any
 	VisitVar(expr *Var) any
 	VisitWhile(expr *While) any
@@ -56,6 +62,9 @@ func (e *Stmt) accept(v VisitorStmt) any {
 	}
 	if e.Function != nil {
 		return e.Function.accept(v)
+	}
+	if e.Return != nil {
+		return e.Return.accept(v)
 	}
 	if e.Print != nil {
 		return e.Print.accept(v)
@@ -79,6 +88,9 @@ func (e *If) accept(visitor VisitorStmt) any {
 }
 func (e *Function) accept(visitor VisitorStmt) any {
 	return visitor.VisitFunction(e)
+}
+func (e *Return) accept(visitor VisitorStmt) any {
+	return visitor.VisitReturn(e)
 }
 func (e *Print) accept(visitor VisitorStmt) any {
 	return visitor.VisitPrint(e)

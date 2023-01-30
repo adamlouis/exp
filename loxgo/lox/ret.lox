@@ -1,0 +1,10 @@
+fun id(n) {
+  return n;
+}
+fun inc(n) {
+  return n + 1;
+}
+
+print id(1);
+print inc(1);
+print inc(inc(1));

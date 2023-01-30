@@ -1,1 +1,1 @@
-https://craftinginterpreters.com/functions.html
+https://craftinginterpreters.com/resolving-and-binding.html
