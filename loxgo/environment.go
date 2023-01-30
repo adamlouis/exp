@@ -22,7 +22,7 @@ func NewEnvironmentFrom(env *Environment) *Environment {
 func (e *Environment) define(name string, v any) {
 	e.values[name] = v
 }
-func (e *Environment) assign(name Token, v any) {
+func (e *Environment) assign(name *Token, v any) {
 	_, ok := e.values[name.lexeme]
 	if !ok {
 		if e.enclosing != nil {
@@ -33,7 +33,7 @@ func (e *Environment) assign(name Token, v any) {
 	}
 	e.values[name.lexeme] = v
 }
-func (e *Environment) get(name Token) any {
+func (e *Environment) get(name *Token) any {
 	v, ok := e.values[name.lexeme]
 	if !ok {
 		if e.enclosing != nil {

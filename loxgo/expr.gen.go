@@ -11,31 +11,31 @@ type Expr struct {
 	Assign   *Assign
 }
 type Binary struct {
-	Left     Expr
-	Operator Token
-	Right    Expr
+	Left     *Expr
+	Operator *Token
+	Right    *Expr
 }
 type Grouping struct {
-	Expression Expr
+	Expression *Expr
 }
 type Literal struct {
 	Value any
 }
 type Unary struct {
-	Operator Token
-	Right    Expr
+	Operator *Token
+	Right    *Expr
 }
 type Logical struct {
-	Left     Expr
-	Operator Token
-	Right    Expr
+	Left     *Expr
+	Operator *Token
+	Right    *Expr
 }
 type Variable struct {
-	Name Token
+	Name *Token
 }
 type Assign struct {
-	Name  Token
-	Value Expr
+	Name  *Token
+	Value *Expr
 }
 type VisitorExpr interface {
 	VisitBinary(expr *Binary) any

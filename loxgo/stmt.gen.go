@@ -10,7 +10,7 @@ type Stmt struct {
 	Block      *Block
 }
 type Expression struct {
-	Expression Expr
+	Expression *Expr
 }
 type If struct {
 	Condition *Expr
@@ -18,10 +18,10 @@ type If struct {
 	Else      *Stmt
 }
 type Print struct {
-	Expression Expr
+	Expression *Expr
 }
 type Var struct {
-	Name        Token
+	Name        *Token
 	Initializer *Expr
 }
 type While struct {

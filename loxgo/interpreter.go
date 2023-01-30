@@ -41,7 +41,7 @@ func (itrp *Interpreter) VisitVariable(expr *Variable) any {
 }
 
 func (itrp *Interpreter) VisitLogical(expr *Logical) any {
-	left := itrp.evaluate(&expr.Left)
+	left := itrp.evaluate(expr.Left)
 
 	if expr.Operator.t == TokenType_OR {
 		if isTruthy(left) {
@@ -52,10 +52,10 @@ func (itrp *Interpreter) VisitLogical(expr *Logical) any {
 			return left
 		}
 	}
-	return itrp.evaluate(&expr.Right)
+	return itrp.evaluate(expr.Right)
 }
 func (itrp *Interpreter) VisitAssign(expr *Assign) any {
-	value := itrp.evaluate(&expr.Value)
+	value := itrp.evaluate(expr.Value)
 	itrp.env.assign(expr.Name, value)
 	return value
 }
@@ -63,11 +63,11 @@ func (itrp *Interpreter) VisitLiteral(expr *Literal) any {
 	return expr.Value
 }
 func (itrp *Interpreter) VisitGrouping(expr *Grouping) any {
-	return itrp.evaluate(&expr.Expression)
+	return itrp.evaluate(expr.Expression)
 }
 
 func (itrp *Interpreter) VisitUnary(expr *Unary) any {
-	right := itrp.evaluate(&expr.Right)
+	right := itrp.evaluate(expr.Right)
 
 	switch expr.Operator.t {
 	case TokenType_BANG:
@@ -84,8 +84,8 @@ func (itrp *Interpreter) VisitUnary(expr *Unary) any {
 }
 
 func (itrp *Interpreter) VisitBinary(expr *Binary) any {
-	left := itrp.evaluate(&expr.Left)
-	right := itrp.evaluate(&expr.Right)
+	left := itrp.evaluate(expr.Left)
+	right := itrp.evaluate(expr.Right)
 
 	switch expr.Operator.t {
 	case TokenType_GREATER:
@@ -191,11 +191,11 @@ func isNil(v any) bool {
 }
 
 func (itrp *Interpreter) VisitExpression(stmt *Expression) any {
-	itrp.evaluate(&stmt.Expression)
+	itrp.evaluate(stmt.Expression)
 	return nil
 }
 func (itrp *Interpreter) VisitPrint(stmt *Print) any {
-	v := itrp.evaluate(&stmt.Expression)
+	v := itrp.evaluate(stmt.Expression)
 	fmt.Println(stringify(v))
 	return nil
 }

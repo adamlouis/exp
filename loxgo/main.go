@@ -190,8 +190,8 @@ type Token struct {
 	line    int
 }
 
-func NewToken(t TokenType, lexeme string, literal any, line int) Token {
-	return Token{
+func NewToken(t TokenType, lexeme string, literal any, line int) *Token {
+	return &Token{
 		t:       t,
 		lexeme:  lexeme,
 		literal: literal,
@@ -206,7 +206,7 @@ func (t *Token) String() string {
 type Scanner struct {
 	lox     *Lox
 	source  string
-	tokens  []Token
+	tokens  []*Token
 	start   int
 	current int
 	line    int
@@ -216,14 +216,14 @@ func NewScanner(lox *Lox, source string) *Scanner {
 	return &Scanner{
 		lox:     lox,
 		source:  source,
-		tokens:  []Token{},
+		tokens:  []*Token{},
 		start:   0,
 		current: 0,
 		line:    1,
 	}
 }
 
-func (s *Scanner) scanTokens() ([]Token, error) {
+func (s *Scanner) scanTokens() ([]*Token, error) {
 	for !s.isAtEnd() {
 		// We are at the beginning of the next lexeme.
 		s.start = s.current

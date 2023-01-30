@@ -23,31 +23,31 @@ func main() {
 
 	if err := genAST(outputDir, "Expr", []ExprType{
 		{"Binary", []string{
-			"Left Expr",
-			"Operator Token",
-			"Right Expr",
+			"Left *Expr",
+			"Operator *Token",
+			"Right *Expr",
 		}},
 		{"Grouping", []string{
-			"Expression Expr",
+			"Expression *Expr",
 		}},
 		{"Literal", []string{
 			"Value any",
 		}},
 		{"Unary", []string{
-			"Operator Token",
-			"Right Expr",
+			"Operator *Token",
+			"Right *Expr",
 		}},
 		{"Logical", []string{
-			"Left Expr",
-			"Operator Token",
-			"Right Expr",
+			"Left *Expr",
+			"Operator *Token",
+			"Right *Expr",
 		}},
 		{"Variable", []string{
-			"Name Token",
+			"Name *Token",
 		}},
 		{"Assign", []string{
-			"Name Token",
-			"Value Expr",
+			"Name *Token",
+			"Value *Expr",
 		}},
 	}); err != nil {
 		fmt.Println(err.Error())
@@ -56,7 +56,7 @@ func main() {
 
 	if err := genAST(outputDir, "Stmt", []ExprType{
 		{"Expression", []string{
-			"Expression Expr",
+			"Expression *Expr",
 		}},
 		{"If", []string{
 			"Condition *Expr",
@@ -64,10 +64,10 @@ func main() {
 			"Else *Stmt",
 		}},
 		{"Print", []string{
-			"Expression Expr",
+			"Expression *Expr",
 		}},
 		{"Var", []string{
-			"Name Token",
+			"Name *Token",
 			"Initializer *Expr",
 		}},
 		{"While", []string{
