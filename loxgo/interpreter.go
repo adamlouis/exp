@@ -8,8 +8,21 @@ var _ = (VisitorExpr)(&Interpreter{})
 var _ = (VisitorStmt)(&Interpreter{})
 
 type Interpreter struct {
-	lox *Lox
-	env *Environment
+	lox     *Lox
+	env     *Environment
+	globals *Environment
+}
+
+func NewInterpreter(lox *Lox) *Interpreter {
+	globals := NewEnvironment()
+
+	globals.define("clock", &Clock{})
+
+	return &Interpreter{
+		lox:     lox,
+		env:     globals,
+		globals: globals,
+	}
 }
 
 func (itrp *Interpreter) interpret(stmts []*Stmt) error {
@@ -38,6 +51,27 @@ func (itrp *Interpreter) evaluate(expr *Expr) any {
 
 func (itrp *Interpreter) VisitVariable(expr *Variable) any {
 	return itrp.env.get(expr.Name)
+}
+
+func (itrp *Interpreter) VisitCall(expr *Call) any {
+	callee := itrp.evaluate(expr.Callee)
+
+	arguments := []any{}
+	for _, argument := range expr.Arguments {
+		arguments = append(arguments, itrp.evaluate(argument))
+	}
+
+	fn, ok := callee.(Callable)
+
+	if !ok {
+		panic("can only call functions and classes")
+	}
+
+	if len(arguments) != fn.Arity() {
+		panic(fmt.Sprintf("expected %d arguments but got %d", fn.Arity(), len(arguments)))
+	}
+
+	return fn.Call(itrp, arguments)
 }
 
 func (itrp *Interpreter) VisitLogical(expr *Logical) any {
@@ -238,5 +272,11 @@ func (itrp *Interpreter) VisitWhile(stmt *While) any {
 	for isTruthy(itrp.evaluate(stmt.Condition)) {
 		itrp.execute(stmt.Body)
 	}
+	return nil
+}
+
+func (itrp *Interpreter) VisitFunction(stmt *Function) any {
+	f := NewLoxFunction(stmt)
+	itrp.env.define(stmt.Name.lexeme, f)
 	return nil
 }

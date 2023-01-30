@@ -34,7 +34,9 @@ func (p *Parser) declaration() *Stmt {
 		}
 	}()
 
-	if p.match(TokenType_VAR) {
+	if p.match(TokenType_FUN) {
+		ret = p.function("function")
+	} else if p.match(TokenType_VAR) {
 		ret = p.varDeclaration()
 	} else {
 		ret = p.statement()
@@ -54,6 +56,35 @@ func (p *Parser) varDeclaration() *Stmt {
 	return &Stmt{
 		Var: &Var{name, initializer},
 	}
+}
+
+func (p *Parser) function(kind string) *Stmt {
+	name := p.consume(TokenType_IDENTIFIER, "Expect "+kind+" name.")
+	p.consume(TokenType_LEFT_PAREN, "Expect '(' after "+kind+" name.")
+
+	parameters := []*Token{}
+	if !p.check(TokenType_RIGHT_PAREN) {
+		for {
+
+			if len(parameters) >= 255 {
+				p.error(p.peek(), "Can't have more than 255 parameters.")
+			}
+
+			parameters = append(
+				parameters,
+				p.consume(TokenType_IDENTIFIER, "Expect parameter name."),
+			)
+
+			if !p.match(TokenType_COMMA) {
+				break
+			}
+		}
+	}
+	p.consume(TokenType_RIGHT_PAREN, "Expect ')' after parameters.")
+
+	p.consume(TokenType_LEFT_BRACE, "Expect '{' before "+kind+" body.")
+	body := p.block()
+	return &Stmt{Function: &Function{name, parameters, body}}
 }
 
 func (p *Parser) statement() *Stmt {
@@ -296,7 +327,38 @@ func (p *Parser) unary() *Expr {
 		}
 	}
 
-	return p.primary()
+	return p.call()
+}
+func (p *Parser) call() *Expr {
+	expr := p.primary()
+	for {
+		if p.match(TokenType_LEFT_PAREN) {
+			expr = p.finishCall(expr)
+		} else {
+			break
+		}
+	}
+	return expr
+}
+func (p *Parser) finishCall(callee *Expr) *Expr {
+	arguments := []*Expr{}
+
+	if !p.check(TokenType_RIGHT_PAREN) {
+		for {
+			if len(arguments) >= 255 {
+				p.error(p.peek(), "Cannot have more than 255 arguments")
+			}
+
+			arguments = append(arguments, p.expression())
+			if !p.match(TokenType_COMMA) {
+				break
+			}
+		}
+	}
+
+	paren := p.consume(TokenType_RIGHT_PAREN, "Expect ')' after arguments.")
+
+	return &Expr{Call: &Call{callee, paren, arguments}}
 }
 
 func (p *Parser) primary() *Expr {

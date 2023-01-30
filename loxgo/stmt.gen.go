@@ -4,6 +4,7 @@ package main
 type Stmt struct {
 	Expression *Expression
 	If         *If
+	Function   *Function
 	Print      *Print
 	Var        *Var
 	While      *While
@@ -16,6 +17,11 @@ type If struct {
 	Condition *Expr
 	Then      *Stmt
 	Else      *Stmt
+}
+type Function struct {
+	Name   *Token
+	Params []*Token
+	Body   []*Stmt
 }
 type Print struct {
 	Expression *Expr
@@ -34,6 +40,7 @@ type Block struct {
 type VisitorStmt interface {
 	VisitExpression(expr *Expression) any
 	VisitIf(expr *If) any
+	VisitFunction(expr *Function) any
 	VisitPrint(expr *Print) any
 	VisitVar(expr *Var) any
 	VisitWhile(expr *While) any
@@ -46,6 +53,9 @@ func (e *Stmt) accept(v VisitorStmt) any {
 	}
 	if e.If != nil {
 		return e.If.accept(v)
+	}
+	if e.Function != nil {
+		return e.Function.accept(v)
 	}
 	if e.Print != nil {
 		return e.Print.accept(v)
@@ -66,6 +76,9 @@ func (e *Expression) accept(visitor VisitorStmt) any {
 }
 func (e *If) accept(visitor VisitorStmt) any {
 	return visitor.VisitIf(e)
+}
+func (e *Function) accept(visitor VisitorStmt) any {
+	return visitor.VisitFunction(e)
 }
 func (e *Print) accept(visitor VisitorStmt) any {
 	return visitor.VisitPrint(e)

@@ -4,6 +4,7 @@ package main
 type Expr struct {
 	Binary   *Binary
 	Grouping *Grouping
+	Call     *Call
 	Literal  *Literal
 	Unary    *Unary
 	Logical  *Logical
@@ -17,6 +18,11 @@ type Binary struct {
 }
 type Grouping struct {
 	Expression *Expr
+}
+type Call struct {
+	Callee    *Expr
+	Paren     *Token
+	Arguments []*Expr
 }
 type Literal struct {
 	Value any
@@ -40,6 +46,7 @@ type Assign struct {
 type VisitorExpr interface {
 	VisitBinary(expr *Binary) any
 	VisitGrouping(expr *Grouping) any
+	VisitCall(expr *Call) any
 	VisitLiteral(expr *Literal) any
 	VisitUnary(expr *Unary) any
 	VisitLogical(expr *Logical) any
@@ -53,6 +60,9 @@ func (e *Expr) accept(v VisitorExpr) any {
 	}
 	if e.Grouping != nil {
 		return e.Grouping.accept(v)
+	}
+	if e.Call != nil {
+		return e.Call.accept(v)
 	}
 	if e.Literal != nil {
 		return e.Literal.accept(v)
@@ -76,6 +86,9 @@ func (e *Binary) accept(visitor VisitorExpr) any {
 }
 func (e *Grouping) accept(visitor VisitorExpr) any {
 	return visitor.VisitGrouping(e)
+}
+func (e *Call) accept(visitor VisitorExpr) any {
+	return visitor.VisitCall(e)
 }
 func (e *Literal) accept(visitor VisitorExpr) any {
 	return visitor.VisitLiteral(e)

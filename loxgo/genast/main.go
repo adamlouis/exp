@@ -30,6 +30,11 @@ func main() {
 		{"Grouping", []string{
 			"Expression *Expr",
 		}},
+		{"Call", []string{
+			"Callee *Expr ",
+			"Paren *Token ",
+			"Arguments []*Expr",
+		}},
 		{"Literal", []string{
 			"Value any",
 		}},
@@ -62,6 +67,11 @@ func main() {
 			"Condition *Expr",
 			"Then *Stmt",
 			"Else *Stmt",
+		}},
+		{"Function", []string{
+			"Name *Token",
+			"Params []*Token",
+			"Body []*Stmt",
 		}},
 		{"Print", []string{
 			"Expression *Expr",

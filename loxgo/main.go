@@ -30,9 +30,7 @@ var keywords = map[string]TokenType{
 func main() {
 	// take a pass at end to make java patterns idomatic go
 	l := &Lox{
-		interpreter: &Interpreter{
-			env: NewEnvironment(),
-		},
+		interpreter: NewInterpreter(nil),
 	}
 	l.interpreter.lox = l
 
