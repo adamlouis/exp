@@ -5,6 +5,8 @@ type Expr struct {
 	Grouping *Grouping
 	Literal  *Literal
 	Unary    *Unary
+	Variable *Variable
+	Assign   *Assign
 }
 type Binary struct {
 	Left     Expr
@@ -21,11 +23,20 @@ type Unary struct {
 	Operator Token
 	Right    Expr
 }
+type Variable struct {
+	Name Token
+}
+type Assign struct {
+	Name  Token
+	Value Expr
+}
 type VisitorExpr interface {
 	VisitBinary(expr *Binary) any
 	VisitGrouping(expr *Grouping) any
 	VisitLiteral(expr *Literal) any
 	VisitUnary(expr *Unary) any
+	VisitVariable(expr *Variable) any
+	VisitAssign(expr *Assign) any
 }
 
 func (e *Expr) accept(v VisitorExpr) any {
@@ -41,6 +52,12 @@ func (e *Expr) accept(v VisitorExpr) any {
 	if e.Unary != nil {
 		return e.Unary.accept(v)
 	}
+	if e.Variable != nil {
+		return e.Variable.accept(v)
+	}
+	if e.Assign != nil {
+		return e.Assign.accept(v)
+	}
 	return nil
 }
 func (e *Binary) accept(visitor VisitorExpr) any {
@@ -54,4 +71,10 @@ func (e *Literal) accept(visitor VisitorExpr) any {
 }
 func (e *Unary) accept(visitor VisitorExpr) any {
 	return visitor.VisitUnary(e)
+}
+func (e *Variable) accept(visitor VisitorExpr) any {
+	return visitor.VisitVariable(e)
+}
+func (e *Assign) accept(visitor VisitorExpr) any {
+	return visitor.VisitAssign(e)
 }

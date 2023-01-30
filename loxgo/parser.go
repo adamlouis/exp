@@ -21,10 +21,44 @@ func (p *Parser) parse() []*Stmt {
 	}()
 
 	for !p.isAtEnd() {
-		ret = append(ret, p.statement())
+		ret = append(ret, p.declaration())
 	}
 
 	return ret
+}
+
+func (p *Parser) declaration() *Stmt {
+	var ret *Stmt
+
+	defer func() {
+		if r := recover(); r != nil {
+			_ = recover()
+		}
+		p.synchronize()
+		ret = nil
+	}()
+
+	if p.match(TokenType_VAR) {
+		ret = p.varDeclaration()
+	} else {
+		ret = p.statement()
+	}
+	return ret
+}
+
+func (p *Parser) varDeclaration() *Stmt {
+	name := p.consume(TokenType_IDENTIFIER, "Expect variable name.")
+
+	var initializer *Expr
+	if p.match(TokenType_EQUAL) {
+		i := p.expression()
+		initializer = &i
+	}
+
+	p.consume(TokenType_SEMICOLON, "Expect ';' after variable declaration.")
+	return &Stmt{
+		Var: &Var{name, initializer},
+	}
 }
 
 func (p *Parser) statement() *Stmt {
@@ -51,7 +85,25 @@ func (p *Parser) expressionStatement() *Stmt {
 }
 
 func (p *Parser) expression() Expr {
-	return p.equality()
+	return p.assignment()
+}
+func (p *Parser) assignment() Expr {
+	expr := p.equality()
+
+	if p.match(TokenType_EQUAL) {
+		equals := p.previous()
+		value := p.assignment()
+
+		if expr.Variable != nil {
+			return Expr{
+				Assign: &Assign{expr.Variable.Name, value},
+			}
+		}
+
+		p.error(equals, "Invalid assignment target.")
+	}
+
+	return expr
 }
 
 func (p *Parser) equality() Expr {
@@ -135,6 +187,12 @@ func (p *Parser) primary() Expr {
 
 	if p.match(TokenType_NUMBER, TokenType_STRING) {
 		return Expr{Literal: &Literal{Value: p.previous().literal}}
+	}
+
+	if p.match(TokenType_IDENTIFIER) {
+		return Expr{
+			Variable: &Variable{p.previous()},
+		}
 	}
 
 	if p.match(TokenType_LEFT_PAREN) {

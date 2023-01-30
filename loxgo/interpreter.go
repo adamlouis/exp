@@ -9,6 +9,7 @@ var _ = (VisitorStmt)(&Interpreter{})
 
 type Interpreter struct {
 	lox *Lox
+	env *Environment
 }
 
 func (itrp *Interpreter) interpret(stmts []*Stmt) error {
@@ -35,6 +36,14 @@ func (itrp *Interpreter) evaluate(expr *Expr) any {
 	return expr.accept(itrp)
 }
 
+func (itrp *Interpreter) VisitVariable(expr *Variable) any {
+	return itrp.env.get(expr.Name)
+}
+func (itrp *Interpreter) VisitAssign(expr *Assign) any {
+	value := itrp.evaluate(&expr.Value)
+	itrp.env.assign(expr.Name, value)
+	return value
+}
 func (itrp *Interpreter) VisitLiteral(expr *Literal) any {
 	return expr.Value
 }
@@ -173,5 +182,14 @@ func (itrp *Interpreter) VisitExpression(stmt *Expression) any {
 func (itrp *Interpreter) VisitPrint(stmt *Print) any {
 	v := itrp.evaluate(&stmt.Expression)
 	fmt.Println(stringify(v))
+	return nil
+}
+func (itrp *Interpreter) VisitVar(stmt *Var) any {
+	var value any
+	if stmt.Initializer != nil {
+		value = itrp.evaluate(stmt.Initializer)
+	}
+
+	itrp.env.define(stmt.Name.lexeme, value)
 	return nil
 }

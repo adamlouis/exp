@@ -19,6 +19,8 @@ func main() {
 	}
 	outputDir := os.Args[1]
 
+	// TODO(adam): fix dupe names .. Var / Exp
+
 	if err := genAST(outputDir, "Expr", []ExprType{
 		{"Binary", []string{
 			"Left Expr",
@@ -35,6 +37,13 @@ func main() {
 			"Operator Token",
 			"Right Expr",
 		}},
+		{"Variable", []string{
+			"Name Token",
+		}},
+		{"Assign", []string{
+			"Name Token",
+			"Value Expr",
+		}},
 	}); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(64)
@@ -46,6 +55,10 @@ func main() {
 		}},
 		{"Print", []string{
 			"Expression Expr",
+		}},
+		{"Var", []string{
+			"Name Token",
+			"Initializer *Expr",
 		}},
 	}); err != nil {
 		fmt.Println(err.Error())
