@@ -193,3 +193,19 @@ func (itrp *Interpreter) VisitVar(stmt *Var) any {
 	itrp.env.define(stmt.Name.lexeme, value)
 	return nil
 }
+func (itrp *Interpreter) VisitBlock(stmt *Block) any {
+	itrp.executeBlock(stmt.Statements, NewEnvironmentFrom(itrp.env))
+	return nil
+}
+
+func (itrp *Interpreter) executeBlock(statements []*Stmt, env *Environment) {
+	previous := itrp.env
+	defer func() {
+		itrp.env = previous
+	}()
+
+	itrp.env = env
+	for _, statement := range statements {
+		itrp.execute(statement)
+	}
+}

@@ -19,7 +19,7 @@ func main() {
 	}
 	outputDir := os.Args[1]
 
-	// TODO(adam): fix dupe names .. Var / Exp
+	// TODO(adam): fix bad dupe names .. Var / Exp
 
 	if err := genAST(outputDir, "Expr", []ExprType{
 		{"Binary", []string{
@@ -60,6 +60,9 @@ func main() {
 			"Name Token",
 			"Initializer *Expr",
 		}},
+		{"Block", []string{
+			"Statements []*Stmt",
+		}},
 	}); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(64)
@@ -82,6 +85,9 @@ func genAST(outputDir string, baseName string, types []ExprType) error {
 	}
 	defer f.Close()
 
+	if err = writeln(f, "// DO NOT EDIT - generated code!"); err != nil {
+		return err
+	}
 	if err = writeln(f, "package main"); err != nil {
 		return err
 	}

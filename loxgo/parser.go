@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Parser struct {
 	lox     *Lox
 	tokens  []Token
@@ -65,6 +67,11 @@ func (p *Parser) statement() *Stmt {
 	if p.match(TokenType_PRINT) {
 		return p.printStatement()
 	}
+	if p.match(TokenType_LEFT_BRACE) {
+		return &Stmt{
+			Block: &Block{p.block()},
+		}
+	}
 	return p.expressionStatement()
 }
 
@@ -82,6 +89,20 @@ func (p *Parser) expressionStatement() *Stmt {
 	return &Stmt{
 		Expression: &Expression{expr},
 	}
+}
+
+func (p *Parser) block() []*Stmt {
+	statements := []*Stmt{}
+
+	fmt.Println("BLOCK START")
+	for !p.check(TokenType_RIGHT_BRACE) && !p.isAtEnd() {
+		fmt.Println("block loop")
+		statements = append(statements, p.declaration())
+	}
+	fmt.Println("BLOCK END")
+
+	p.consume(TokenType_RIGHT_BRACE, "Expect '}' after block.")
+	return statements
 }
 
 func (p *Parser) expression() Expr {

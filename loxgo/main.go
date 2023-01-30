@@ -31,9 +31,7 @@ func main() {
 	// take a pass at end to make java patterns idomatic go
 	l := &Lox{
 		interpreter: &Interpreter{
-			env: &Environment{
-				values: map[string]any{},
-			},
+			env: NewEnvironment(),
 		},
 	}
 	l.interpreter.lox = l

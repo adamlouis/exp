@@ -1,3 +1,4 @@
+// DO NOT EDIT - generated code!
 package main
 
 type Expr struct {
