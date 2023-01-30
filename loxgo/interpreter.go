@@ -39,6 +39,21 @@ func (itrp *Interpreter) evaluate(expr *Expr) any {
 func (itrp *Interpreter) VisitVariable(expr *Variable) any {
 	return itrp.env.get(expr.Name)
 }
+
+func (itrp *Interpreter) VisitLogical(expr *Logical) any {
+	left := itrp.evaluate(&expr.Left)
+
+	if expr.Operator.t == TokenType_OR {
+		if isTruthy(left) {
+			return left
+		}
+	} else {
+		if !isTruthy(left) {
+			return left
+		}
+	}
+	return itrp.evaluate(&expr.Right)
+}
 func (itrp *Interpreter) VisitAssign(expr *Assign) any {
 	value := itrp.evaluate(&expr.Value)
 	itrp.env.assign(expr.Name, value)
@@ -208,4 +223,20 @@ func (itrp *Interpreter) executeBlock(statements []*Stmt, env *Environment) {
 	for _, statement := range statements {
 		itrp.execute(statement)
 	}
+}
+
+func (itrp *Interpreter) VisitIf(stmt *If) any {
+	if isTruthy(itrp.evaluate(stmt.Condition)) {
+		itrp.execute(stmt.Then)
+	} else if stmt.Else != nil {
+		itrp.execute(stmt.Else)
+	}
+	return nil
+}
+
+func (itrp *Interpreter) VisitWhile(stmt *While) any {
+	for isTruthy(itrp.evaluate(stmt.Condition)) {
+		itrp.execute(stmt.Body)
+	}
+	return nil
 }

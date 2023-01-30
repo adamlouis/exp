@@ -37,6 +37,11 @@ func main() {
 			"Operator Token",
 			"Right Expr",
 		}},
+		{"Logical", []string{
+			"Left Expr",
+			"Operator Token",
+			"Right Expr",
+		}},
 		{"Variable", []string{
 			"Name Token",
 		}},
@@ -53,12 +58,21 @@ func main() {
 		{"Expression", []string{
 			"Expression Expr",
 		}},
+		{"If", []string{
+			"Condition *Expr",
+			"Then *Stmt",
+			"Else *Stmt",
+		}},
 		{"Print", []string{
 			"Expression Expr",
 		}},
 		{"Var", []string{
 			"Name Token",
 			"Initializer *Expr",
+		}},
+		{"While", []string{
+			"Condition *Expr",
+			"Body *Stmt",
 		}},
 		{"Block", []string{
 			"Statements []*Stmt",

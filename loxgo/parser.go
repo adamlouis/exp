@@ -58,6 +58,15 @@ func (p *Parser) varDeclaration() *Stmt {
 }
 
 func (p *Parser) statement() *Stmt {
+	if p.match(TokenType_FOR) {
+		return p.forStatement()
+	}
+	if p.match(TokenType_IF) {
+		return p.ifStatement()
+	}
+	if p.match(TokenType_WHILE) {
+		return p.whileStatement()
+	}
 	if p.match(TokenType_PRINT) {
 		return p.printStatement()
 	}
@@ -67,6 +76,86 @@ func (p *Parser) statement() *Stmt {
 		}
 	}
 	return p.expressionStatement()
+}
+
+func (p *Parser) forStatement() *Stmt {
+	p.consume(TokenType_LEFT_PAREN, "Expect '(' after 'for'.")
+
+	var initializer *Stmt
+	if p.match(TokenType_SEMICOLON) {
+		initializer = nil
+	} else if p.match(TokenType_VAR) {
+		initializer = p.varDeclaration()
+	} else {
+		initializer = p.expressionStatement()
+	}
+
+	var condition *Expr
+	if !p.check(TokenType_SEMICOLON) {
+		c := p.expression()
+		condition = &c
+	}
+	p.consume(TokenType_SEMICOLON, "Expect ';' after loop condition.")
+
+	var increment *Expr
+	if !p.check(TokenType_RIGHT_PAREN) {
+		i := p.expression()
+		increment = &i
+	}
+	p.consume(TokenType_RIGHT_PAREN, "Expect ')' after for clauses.")
+
+	body := p.statement()
+	if increment != nil {
+		body = &Stmt{
+			Block: &Block{append(
+				body.Block.Statements,
+				&Stmt{Expression: &Expression{*increment}},
+			)},
+		}
+	}
+
+	if condition == nil {
+		condition = &Expr{
+			Literal: &Literal{true},
+		}
+	}
+	body = &Stmt{While: &While{condition, body}}
+
+	if initializer != nil {
+		body = &Stmt{
+			Block: &Block{
+				append([]*Stmt{initializer}, body),
+			},
+		}
+	}
+
+	return body
+}
+
+func (p *Parser) ifStatement() *Stmt {
+	p.consume(TokenType_LEFT_PAREN, "Expect '(' after 'if'.")
+	condition := p.expression()
+	p.consume(TokenType_RIGHT_PAREN, "Expect ')' after if condition.")
+
+	thenBranch := p.statement()
+	var elseBranch *Stmt
+	if p.match(TokenType_ELSE) {
+		elseBranch = p.statement()
+	}
+
+	return &Stmt{
+		If: &If{&condition, thenBranch, elseBranch},
+	}
+}
+func (p *Parser) whileStatement() *Stmt {
+	p.consume(TokenType_LEFT_PAREN, "Expect '(' after 'while'.")
+	condition := p.expression()
+	p.consume(TokenType_RIGHT_PAREN, "Expect ')' after condition.")
+	body := p.statement()
+
+	return &Stmt{
+		While: &While{&condition, body},
+	}
 }
 
 func (p *Parser) printStatement() *Stmt {
@@ -100,7 +189,7 @@ func (p *Parser) expression() Expr {
 	return p.assignment()
 }
 func (p *Parser) assignment() Expr {
-	expr := p.equality()
+	expr := p.or()
 
 	if p.match(TokenType_EQUAL) {
 		equals := p.previous()
@@ -126,6 +215,33 @@ func (p *Parser) equality() Expr {
 		right := p.comparison()  // Expr
 		expr = Expr{
 			Binary: &Binary{expr, operator, right},
+		}
+	}
+
+	return expr
+}
+func (p *Parser) or() Expr {
+	expr := p.and()
+
+	for p.match(TokenType_OR) {
+		operator := p.previous()
+		right := p.and()
+		expr = Expr{
+			Logical: &Logical{expr, operator, right},
+		}
+	}
+
+	return expr
+}
+
+func (p *Parser) and() Expr {
+	expr := p.equality()
+
+	for p.match(TokenType_AND) {
+		operator := p.previous()
+		right := p.equality()
+		expr = Expr{
+			Logical: &Logical{expr, operator, right},
 		}
 	}
 
