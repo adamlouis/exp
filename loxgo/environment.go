@@ -43,3 +43,17 @@ func (e *Environment) get(name *Token) any {
 	}
 	return v
 }
+func (e *Environment) getAt(distance int, name string) any {
+	return e.ancestor(distance).values[name]
+}
+func (e *Environment) ancestor(distance int) *Environment {
+	var ret *Environment = e
+	for i := 0; i < distance; i++ {
+		ret = ret.enclosing
+	}
+	return ret
+}
+
+func (e *Environment) assignAt(distance int, name *Token, value any) {
+	e.ancestor(distance).values[name.lexeme] = value
+}

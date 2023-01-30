@@ -6,7 +6,7 @@ def fib(n):
     return fib(n - 2) + fib(n - 1)
 
 start = time.time()
-for i in range(0,30):
+for i in range(0,28):
     print(fib(i))
 end = time.time()
 

@@ -13,7 +13,7 @@ var _ Callable = (*Clock)(nil)
 type Clock struct{}
 
 func (c *Clock) Call(itrp *Interpreter, arguments []any) any {
-	return float64(time.Now().Second())
+	return float64(time.Now().Unix())
 }
 
 func (c *Clock) Arity() int {

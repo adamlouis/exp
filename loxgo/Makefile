@@ -1,6 +1,6 @@
 
-build:
-	mkdir build
+build: *.go
+	mkdir -p build
 	go build -o build/lox
 
 run:

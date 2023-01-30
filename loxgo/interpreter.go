@@ -11,6 +11,7 @@ type Interpreter struct {
 	lox     *Lox
 	env     *Environment
 	globals *Environment
+	locals  map[Expr]int
 }
 
 func NewInterpreter(lox *Lox) *Interpreter {
@@ -22,6 +23,7 @@ func NewInterpreter(lox *Lox) *Interpreter {
 		lox:     lox,
 		env:     globals,
 		globals: globals,
+		locals:  map[Expr]int{},
 	}
 }
 
@@ -48,7 +50,16 @@ func (itrp *Interpreter) evaluate(expr *Expr) any {
 }
 
 func (itrp *Interpreter) VisitVariable(expr *Variable) any {
-	return itrp.env.get(expr.Name)
+	return itrp.lookUpVariable(expr.Name, Expr{Variable: expr})
+}
+
+func (itrp *Interpreter) lookUpVariable(name *Token, expr Expr) any {
+	distance, ok := itrp.locals[expr]
+	if ok {
+		return itrp.env.getAt(distance, name.lexeme)
+	} else {
+		return itrp.globals.get(name)
+	}
 }
 
 func (itrp *Interpreter) VisitCall(expr *Call) any {
@@ -88,7 +99,14 @@ func (itrp *Interpreter) VisitLogical(expr *Logical) any {
 }
 func (itrp *Interpreter) VisitAssign(expr *Assign) any {
 	value := itrp.evaluate(expr.Value)
-	itrp.env.assign(expr.Name, value)
+	super := Expr{Assign: expr}
+	distance, ok := itrp.locals[super]
+	if ok {
+		itrp.env.assignAt(distance, expr.Name, value)
+	} else {
+		itrp.globals.assign(expr.Name, value)
+	}
+
 	return value
 }
 func (itrp *Interpreter) VisitLiteral(expr *Literal) any {
@@ -287,6 +305,10 @@ func (itrp *Interpreter) VisitReturn(stmt *Return) any {
 	}
 
 	panic(ReturnException{Value: value})
+}
+
+func (itrp *Interpreter) resolve(expr Expr, depth int) {
+	itrp.locals[expr] = depth
 }
 
 type ReturnException struct {

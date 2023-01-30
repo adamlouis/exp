@@ -4,7 +4,7 @@ const fib = (n) => {
 };
 
 const start = new Date().getTime();
-for (let i = 0; i < 30; i = i + 1) {
+for (let i = 0; i < 28; i = i + 1) {
   console.log(fib(i));
 }
 const end = new Date().getTime();

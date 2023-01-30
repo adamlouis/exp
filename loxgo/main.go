@@ -130,6 +130,13 @@ func (l *Lox) run(source string) error {
 		return nil
 	}
 
+	resolver := NewResolver(l, l.interpreter)
+	resolver.resolveStmts(statements)
+
+	if l.hadError {
+		return nil
+	}
+
 	return l.interpreter.interpret(statements)
 }
 
