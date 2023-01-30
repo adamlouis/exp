@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type Parser struct {
 	lox     *Lox
 	tokens  []Token
@@ -18,9 +16,6 @@ func NewParser(l *Lox, tokens []Token) *Parser {
 
 func (p *Parser) parse() []*Stmt {
 	ret := []*Stmt{}
-	defer func() {
-		_ = recover()
-	}()
 
 	for !p.isAtEnd() {
 		ret = append(ret, p.declaration())
@@ -34,10 +29,9 @@ func (p *Parser) declaration() *Stmt {
 
 	defer func() {
 		if r := recover(); r != nil {
-			_ = recover()
+			p.synchronize()
+			ret = nil
 		}
-		p.synchronize()
-		ret = nil
 	}()
 
 	if p.match(TokenType_VAR) {
@@ -94,12 +88,9 @@ func (p *Parser) expressionStatement() *Stmt {
 func (p *Parser) block() []*Stmt {
 	statements := []*Stmt{}
 
-	fmt.Println("BLOCK START")
 	for !p.check(TokenType_RIGHT_BRACE) && !p.isAtEnd() {
-		fmt.Println("block loop")
 		statements = append(statements, p.declaration())
 	}
-	fmt.Println("BLOCK END")
 
 	p.consume(TokenType_RIGHT_BRACE, "Expect '}' after block.")
 	return statements

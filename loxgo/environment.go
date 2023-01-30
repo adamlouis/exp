@@ -29,7 +29,6 @@ func (e *Environment) assign(name Token, v any) {
 			e.enclosing.assign(name, v)
 			return
 		}
-
 		panic("Undefined variable '" + name.lexeme + "'.")
 	}
 	e.values[name.lexeme] = v
@@ -40,7 +39,6 @@ func (e *Environment) get(name Token) any {
 		if e.enclosing != nil {
 			return e.enclosing.get(name)
 		}
-
 		panic("Undefined variable '" + name.lexeme + "'.")
 	}
 	return v
