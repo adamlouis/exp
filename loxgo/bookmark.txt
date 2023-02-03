@@ -1,1 +1,1 @@
-https://craftinginterpreters.com/classes.html#properties-on-instances
+https://craftinginterpreters.com/classes.html#set-expressions

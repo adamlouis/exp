@@ -78,6 +78,10 @@ func (r *Resolver) VisitExpression(stmt *Expression) any {
 	r.resolveExpr(stmt.Expression)
 	return nil
 }
+func (r *Resolver) VisitGet(stmt *Get) any {
+	r.resolveExpr(stmt.Object)
+	return nil
+}
 func (r *Resolver) VisitIf(stmt *If) any {
 	r.resolveExpr(stmt.Condition)
 	r.resolveStmt(stmt.Then)

@@ -5,6 +5,8 @@ type Expr struct {
 	Binary   *Binary
 	Grouping *Grouping
 	Call     *Call
+	Get      *Get
+	Set      *Set
 	Literal  *Literal
 	Unary    *Unary
 	Logical  *Logical
@@ -23,6 +25,15 @@ type Call struct {
 	Callee    *Expr
 	Paren     *Token
 	Arguments []*Expr
+}
+type Get struct {
+	Object *Expr
+	Name   *Token
+}
+type Set struct {
+	Object *Expr
+	Name   *Token
+	Value  *Expr
 }
 type Literal struct {
 	Value any
@@ -47,6 +58,8 @@ type VisitorExpr interface {
 	VisitBinary(expr *Binary) any
 	VisitGrouping(expr *Grouping) any
 	VisitCall(expr *Call) any
+	VisitGet(expr *Get) any
+	VisitSet(expr *Set) any
 	VisitLiteral(expr *Literal) any
 	VisitUnary(expr *Unary) any
 	VisitLogical(expr *Logical) any
@@ -63,6 +76,12 @@ func (e *Expr) accept(v VisitorExpr) any {
 	}
 	if e.Call != nil {
 		return e.Call.accept(v)
+	}
+	if e.Get != nil {
+		return e.Get.accept(v)
+	}
+	if e.Set != nil {
+		return e.Set.accept(v)
 	}
 	if e.Literal != nil {
 		return e.Literal.accept(v)
@@ -89,6 +108,12 @@ func (e *Grouping) accept(visitor VisitorExpr) any {
 }
 func (e *Call) accept(visitor VisitorExpr) any {
 	return visitor.VisitCall(e)
+}
+func (e *Get) accept(visitor VisitorExpr) any {
+	return visitor.VisitGet(e)
+}
+func (e *Set) accept(visitor VisitorExpr) any {
+	return visitor.VisitSet(e)
 }
 func (e *Literal) accept(visitor VisitorExpr) any {
 	return visitor.VisitLiteral(e)

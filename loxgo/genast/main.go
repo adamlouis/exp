@@ -35,6 +35,15 @@ func main() {
 			"Paren *Token ",
 			"Arguments []*Expr",
 		}},
+		{"Get", []string{
+			"Object *Expr",
+			"Name *Token",
+		}},
+		{"Set", []string{
+			"Object *Expr",
+			"Name *Token",
+			"Value *Expr",
+		}},
 		{"Literal", []string{
 			"Value any",
 		}},

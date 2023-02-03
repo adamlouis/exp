@@ -136,6 +136,15 @@ func (itrp *Interpreter) VisitUnary(expr *Unary) any {
 	panic("unreachable")
 }
 
+func (itrp *Interpreter) VisitGet(expr *Get) any {
+	object := itrp.evaluate(expr.Object)
+	fmt.Println("TODO:OBJ:", object)
+	// if (object instanceof LoxInstance) {
+	//   return ((LoxInstance) object).get(expr.name)
+	// }
+	panic("Only instances have properties.")
+}
+
 func (itrp *Interpreter) VisitBinary(expr *Binary) any {
 	left := itrp.evaluate(expr.Left)
 	right := itrp.evaluate(expr.Right)

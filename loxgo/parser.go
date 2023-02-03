@@ -361,6 +361,9 @@ func (p *Parser) call() *Expr {
 	for {
 		if p.match(TokenType_LEFT_PAREN) {
 			expr = p.finishCall(expr)
+		} else if p.match(TokenType_DOT) {
+			name := p.consume(TokenType_IDENTIFIER, "Expect property name after '.'.")
+			expr = &Expr{Get: &Get{expr, name}}
 		} else {
 			break
 		}
