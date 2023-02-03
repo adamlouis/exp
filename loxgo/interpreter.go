@@ -311,6 +311,13 @@ func (itrp *Interpreter) resolve(expr Expr, depth int) {
 	itrp.locals[expr] = depth
 }
 
+func (itrp *Interpreter) VisitClass(expr *Class) any {
+	itrp.env.define(expr.Name.lexeme, nil)
+	klass := LoxClass{expr.Name.lexeme}
+	itrp.env.assign(expr.Name, klass)
+	return nil
+}
+
 type ReturnException struct {
 	Value any
 }

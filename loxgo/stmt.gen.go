@@ -10,6 +10,7 @@ type Stmt struct {
 	Var        *Var
 	While      *While
 	Block      *Block
+	Class      *Class
 }
 type Expression struct {
 	Expression *Expr
@@ -42,6 +43,10 @@ type While struct {
 type Block struct {
 	Statements []*Stmt
 }
+type Class struct {
+	Name    *Token
+	Methods []*Stmt
+}
 type VisitorStmt interface {
 	VisitExpression(expr *Expression) any
 	VisitIf(expr *If) any
@@ -51,6 +56,7 @@ type VisitorStmt interface {
 	VisitVar(expr *Var) any
 	VisitWhile(expr *While) any
 	VisitBlock(expr *Block) any
+	VisitClass(expr *Class) any
 }
 
 func (e *Stmt) accept(v VisitorStmt) any {
@@ -78,6 +84,9 @@ func (e *Stmt) accept(v VisitorStmt) any {
 	if e.Block != nil {
 		return e.Block.accept(v)
 	}
+	if e.Class != nil {
+		return e.Class.accept(v)
+	}
 	return nil
 }
 func (e *Expression) accept(visitor VisitorStmt) any {
@@ -103,4 +112,7 @@ func (e *While) accept(visitor VisitorStmt) any {
 }
 func (e *Block) accept(visitor VisitorStmt) any {
 	return visitor.VisitBlock(e)
+}
+func (e *Class) accept(visitor VisitorStmt) any {
+	return visitor.VisitClass(e)
 }

@@ -127,6 +127,12 @@ func (r *Resolver) VisitBlock(stmt *Block) any {
 	return nil
 }
 
+func (r *Resolver) VisitClass(stmt *Class) any {
+	r.declare(stmt.Name)
+	r.define(stmt.Name)
+	return nil
+}
+
 func (r *Resolver) resolveStmts(statements []*Stmt) {
 	for _, statement := range statements {
 		r.resolveStmt(statement)

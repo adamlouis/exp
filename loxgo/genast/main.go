@@ -91,6 +91,10 @@ func main() {
 		{"Block", []string{
 			"Statements []*Stmt",
 		}},
+		{"Class", []string{
+			"Name *Token",
+			"Methods []*Stmt",
+		}},
 	}); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(64)
