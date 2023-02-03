@@ -71,9 +71,12 @@ func (itrp *Interpreter) VisitCall(expr *Call) any {
 	}
 
 	fn, ok := callee.(Callable)
-
 	if !ok {
-		panic("can only call functions and classes")
+		lc, ok := callee.(LoxClass)
+		if !ok {
+			panic("can only call functions and classes")
+		}
+		fn = &lc
 	}
 
 	if len(arguments) != fn.Arity() {
