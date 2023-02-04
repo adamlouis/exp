@@ -100,6 +100,18 @@ func (itrp *Interpreter) VisitLogical(expr *Logical) any {
 	}
 	return itrp.evaluate(expr.Right)
 }
+func (itrp *Interpreter) VisitSet(expr *Set) any {
+	object := itrp.evaluate(expr.Object)
+
+	loxi, ok := object.(*LoxInstance)
+	if !ok {
+		panic(expr.Name.lexeme + ": only instances have fields.")
+	}
+
+	value := itrp.evaluate(expr.Value)
+	loxi.Set(expr.Name, value)
+	return value
+}
 func (itrp *Interpreter) VisitAssign(expr *Assign) any {
 	value := itrp.evaluate(expr.Value)
 	super := Expr{Assign: expr}
@@ -138,10 +150,12 @@ func (itrp *Interpreter) VisitUnary(expr *Unary) any {
 
 func (itrp *Interpreter) VisitGet(expr *Get) any {
 	object := itrp.evaluate(expr.Object)
-	fmt.Println("TODO:OBJ:", object)
-	// if (object instanceof LoxInstance) {
-	//   return ((LoxInstance) object).get(expr.name)
-	// }
+
+	li, ok := object.(*LoxInstance)
+	if ok {
+		return li.Get(expr.Name)
+	}
+
 	panic("Only instances have properties.")
 }
 
@@ -323,10 +337,18 @@ func (itrp *Interpreter) resolve(expr Expr, depth int) {
 	itrp.locals[expr] = depth
 }
 
-func (itrp *Interpreter) VisitClass(expr *Class) any {
-	itrp.env.define(expr.Name.lexeme, nil)
-	klass := LoxClass{expr.Name.lexeme}
-	itrp.env.assign(expr.Name, klass)
+func (itrp *Interpreter) VisitClass(stmt *Class) any {
+	itrp.env.define(stmt.Name.lexeme, nil)
+
+	methods := map[string]*LoxFunction{}
+	for _, method := range stmt.Methods {
+		fn := method.Function
+		lfn := NewLoxFunction(fn, itrp.env)
+		methods[fn.Name.lexeme] = lfn
+	}
+
+	klass := NewLoxClass(stmt.Name.lexeme, methods)
+	itrp.env.assign(stmt.Name, klass)
 	return nil
 }
 

@@ -1,1 +1,1 @@
-https://craftinginterpreters.com/classes.html#set-expressions
+https://craftinginterpreters.com/classes.html#this

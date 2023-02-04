@@ -17,5 +17,14 @@ func (li *LoxInstance) Get(name *Token) any {
 	if v, ok := li.fields[name.lexeme]; ok {
 		return v
 	}
+
+	method := li.LoxClass.findMethod(name.lexeme)
+	if method != nil {
+		return method
+	}
+
 	panic("Undefined property '" + name.lexeme + "'.")
+}
+func (li *LoxInstance) Set(name *Token, value any) {
+	li.fields[name.lexeme] = value
 }

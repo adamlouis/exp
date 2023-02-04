@@ -17,6 +17,7 @@ type FunctionType string
 const (
 	FunctionType_NONE     = "NONE"
 	FunctionType_FUNCTION = "FUNCTION"
+	FunctionType_METHOD   = "METHOD"
 )
 
 func NewResolver(lox *Lox, itrp *Interpreter) *Resolver {
@@ -49,6 +50,11 @@ func (r *Resolver) VisitLiteral(expr *Literal) any {
 }
 func (r *Resolver) VisitUnary(expr *Unary) any {
 	r.resolveExpr(expr.Right)
+	return nil
+}
+func (r *Resolver) VisitSet(expr *Set) any {
+	r.resolveExpr(expr.Value)
+	r.resolveExpr(expr.Object)
 	return nil
 }
 func (r *Resolver) VisitLogical(expr *Logical) any {
@@ -134,6 +140,11 @@ func (r *Resolver) VisitBlock(stmt *Block) any {
 func (r *Resolver) VisitClass(stmt *Class) any {
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
+
+	for _, method := range stmt.Methods {
+		r.resolveFunction(method.Function, FunctionType_METHOD)
+	}
+
 	return nil
 }
 

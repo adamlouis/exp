@@ -256,6 +256,10 @@ func (p *Parser) assignment() *Expr {
 			}
 		}
 
+		if expr.Get != nil {
+			return &Expr{Set: &Set{expr.Get.Object, expr.Get.Name, value}}
+		}
+
 		p.error(equals, "Invalid assignment target.")
 	}
 
