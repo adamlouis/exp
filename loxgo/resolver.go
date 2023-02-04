@@ -25,8 +25,9 @@ const (
 type ClassType string
 
 const (
-	ClassType_NONE  ClassType = "NONE"
-	ClassType_CLASS ClassType = "CLASS"
+	ClassType_NONE     ClassType = "NONE"
+	ClassType_CLASS    ClassType = "CLASS"
+	ClassType_SUBCLASS ClassType = "SUBCLASS"
 )
 
 func NewResolver(lox *Lox, itrp *Interpreter) *Resolver {
@@ -68,6 +69,12 @@ func (r *Resolver) VisitSet(expr *Set) any {
 	return nil
 }
 func (r *Resolver) VisitSuper(expr *Super) any {
+	if r.currentClass == ClassType_NONE {
+		r.lox.error(expr.Keyword, "Can't use 'super' outside of a class.")
+	} else if r.currentClass != ClassType_SUBCLASS {
+		r.lox.error(expr.Keyword, "Can't use 'super' in a class with no superclass.")
+	}
+
 	r.resolveLocal(Expr{Super: expr}, expr.Keyword)
 	return nil
 }
@@ -175,6 +182,7 @@ func (r *Resolver) VisitClass(stmt *Class) any {
 	}
 
 	if stmt.SuperClass != nil {
+		r.currentClass = ClassType_SUBCLASS
 		r.resolveExpr(&Expr{Variable: stmt.SuperClass})
 	}
 
