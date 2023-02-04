@@ -1,1 +1,1 @@
-https://craftinginterpreters.com/chunks-of-bytecode.html#disassembling-chunks
+https://craftinginterpreters.com/a-virtual-machine.html
