@@ -6,26 +6,35 @@ var (
 )
 
 type Resolver struct {
-	lox       *Lox
-	itrp      *Interpreter
-	scopes    []map[string]bool
-	currentFn FunctionType
+	lox          *Lox
+	itrp         *Interpreter
+	scopes       []map[string]bool
+	currentFn    FunctionType
+	currentClass ClassType
 }
 
 type FunctionType string
 
 const (
-	FunctionType_NONE     = "NONE"
-	FunctionType_FUNCTION = "FUNCTION"
-	FunctionType_METHOD   = "METHOD"
+	FunctionType_NONE     FunctionType = "NONE"
+	FunctionType_FUNCTION FunctionType = "FUNCTION"
+	FunctionType_METHOD   FunctionType = "METHOD"
+)
+
+type ClassType string
+
+const (
+	ClassType_NONE  ClassType = "NONE"
+	ClassType_CLASS ClassType = "CLASS"
 )
 
 func NewResolver(lox *Lox, itrp *Interpreter) *Resolver {
 	return &Resolver{
-		lox:       lox,
-		itrp:      itrp,
-		scopes:    []map[string]bool{},
-		currentFn: FunctionType_NONE,
+		lox:          lox,
+		itrp:         itrp,
+		scopes:       []map[string]bool{},
+		currentFn:    FunctionType_NONE,
+		currentClass: ClassType_NONE,
 	}
 }
 
@@ -55,6 +64,14 @@ func (r *Resolver) VisitUnary(expr *Unary) any {
 func (r *Resolver) VisitSet(expr *Set) any {
 	r.resolveExpr(expr.Value)
 	r.resolveExpr(expr.Object)
+	return nil
+}
+func (r *Resolver) VisitThis(expr *This) any {
+	if r.currentClass == ClassType_NONE {
+		r.lox.error(expr.Keyword, "Can't use 'this' outside of a class.")
+	}
+
+	r.resolveLocal(Expr{This: expr}, expr.Keyword)
 	return nil
 }
 func (r *Resolver) VisitLogical(expr *Logical) any {
@@ -138,13 +155,23 @@ func (r *Resolver) VisitBlock(stmt *Block) any {
 }
 
 func (r *Resolver) VisitClass(stmt *Class) any {
+	enclosing := r.currentClass
+	r.currentClass = ClassType_CLASS
+
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
+
+	r.beginScope()
+
+	last := r.scopes[len(r.scopes)-1]
+	last["this"] = true
 
 	for _, method := range stmt.Methods {
 		r.resolveFunction(method.Function, FunctionType_METHOD)
 	}
+	r.endScope()
 
+	r.currentClass = enclosing
 	return nil
 }
 

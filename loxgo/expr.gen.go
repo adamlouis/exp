@@ -9,6 +9,7 @@ type Expr struct {
 	Set      *Set
 	Literal  *Literal
 	Unary    *Unary
+	This     *This
 	Logical  *Logical
 	Variable *Variable
 	Assign   *Assign
@@ -42,6 +43,9 @@ type Unary struct {
 	Operator *Token
 	Right    *Expr
 }
+type This struct {
+	Keyword *Token
+}
 type Logical struct {
 	Left     *Expr
 	Operator *Token
@@ -62,6 +66,7 @@ type VisitorExpr interface {
 	VisitSet(expr *Set) any
 	VisitLiteral(expr *Literal) any
 	VisitUnary(expr *Unary) any
+	VisitThis(expr *This) any
 	VisitLogical(expr *Logical) any
 	VisitVariable(expr *Variable) any
 	VisitAssign(expr *Assign) any
@@ -88,6 +93,9 @@ func (e *Expr) accept(v VisitorExpr) any {
 	}
 	if e.Unary != nil {
 		return e.Unary.accept(v)
+	}
+	if e.This != nil {
+		return e.This.accept(v)
 	}
 	if e.Logical != nil {
 		return e.Logical.accept(v)
@@ -120,6 +128,9 @@ func (e *Literal) accept(visitor VisitorExpr) any {
 }
 func (e *Unary) accept(visitor VisitorExpr) any {
 	return visitor.VisitUnary(e)
+}
+func (e *This) accept(visitor VisitorExpr) any {
+	return visitor.VisitThis(e)
 }
 func (e *Logical) accept(visitor VisitorExpr) any {
 	return visitor.VisitLogical(e)

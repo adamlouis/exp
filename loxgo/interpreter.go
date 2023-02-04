@@ -52,6 +52,9 @@ func (itrp *Interpreter) evaluate(expr *Expr) any {
 func (itrp *Interpreter) VisitVariable(expr *Variable) any {
 	return itrp.lookUpVariable(expr.Name, Expr{Variable: expr})
 }
+func (itrp *Interpreter) VisitThis(expr *This) any {
+	return itrp.lookUpVariable(expr.Keyword, Expr{This: expr})
+}
 
 func (itrp *Interpreter) lookUpVariable(name *Token, expr Expr) any {
 	distance, ok := itrp.locals[expr]

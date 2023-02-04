@@ -51,6 +51,9 @@ func main() {
 			"Operator *Token",
 			"Right *Expr",
 		}},
+		{"This", []string{
+			"Keyword *Token",
+		}},
 		{"Logical", []string{
 			"Left *Expr",
 			"Operator *Token",

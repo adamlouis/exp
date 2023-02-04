@@ -405,11 +405,12 @@ func (p *Parser) primary() *Expr {
 	if p.match(TokenType_NIL) {
 		return &Expr{Literal: &Literal{Value: nil}}
 	}
-
 	if p.match(TokenType_NUMBER, TokenType_STRING) {
 		return &Expr{Literal: &Literal{Value: p.previous().literal}}
 	}
-
+	if p.match(TokenType_THIS) {
+		return &Expr{This: &This{Keyword: p.previous()}}
+	}
 	if p.match(TokenType_IDENTIFIER) {
 		return &Expr{
 			Variable: &Variable{p.previous()},

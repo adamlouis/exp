@@ -44,3 +44,9 @@ func (c *LoxFunction) Arity() int {
 func (c *LoxFunction) String() string {
 	return "<fn " + c.decl.Name.lexeme + ">"
 }
+
+func (c *LoxFunction) bind(instance *LoxInstance) *LoxFunction {
+	env := NewEnvironmentFrom(c.closure)
+	env.define("this", instance)
+	return NewLoxFunction(c.decl, env)
+}

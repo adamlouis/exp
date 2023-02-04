@@ -20,7 +20,7 @@ func (li *LoxInstance) Get(name *Token) any {
 
 	method := li.LoxClass.findMethod(name.lexeme)
 	if method != nil {
-		return method
+		return method.bind(li)
 	}
 
 	panic("Undefined property '" + name.lexeme + "'.")
