@@ -1,1 +1,1 @@
-https://craftinginterpreters.com/classes.html#constructors-and-initializers
+https://craftinginterpreters.com/inheritance.html

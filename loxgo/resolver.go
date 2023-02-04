@@ -16,9 +16,10 @@ type Resolver struct {
 type FunctionType string
 
 const (
-	FunctionType_NONE     FunctionType = "NONE"
-	FunctionType_FUNCTION FunctionType = "FUNCTION"
-	FunctionType_METHOD   FunctionType = "METHOD"
+	FunctionType_NONE        FunctionType = "NONE"
+	FunctionType_FUNCTION    FunctionType = "FUNCTION"
+	FunctionType_METHOD      FunctionType = "METHOD"
+	FunctionType_INITIALIZER FunctionType = "INITIALIZER"
 )
 
 type ClassType string
@@ -126,6 +127,10 @@ func (r *Resolver) VisitReturn(stmt *Return) any {
 	}
 
 	if stmt.Value != nil {
+		if r.currentFn == FunctionType_INITIALIZER {
+			r.lox.error(stmt.Keyword, "Can't return a value from an initializer.")
+		}
+
 		r.resolveExpr(stmt.Value)
 	}
 	return nil
@@ -167,7 +172,11 @@ func (r *Resolver) VisitClass(stmt *Class) any {
 	last["this"] = true
 
 	for _, method := range stmt.Methods {
-		r.resolveFunction(method.Function, FunctionType_METHOD)
+		declaration := FunctionType_METHOD
+		if method.Function.Name.lexeme == "init" {
+			declaration = FunctionType_INITIALIZER
+		}
+		r.resolveFunction(method.Function, declaration)
 	}
 	r.endScope()
 

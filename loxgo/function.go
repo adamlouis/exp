@@ -3,14 +3,16 @@ package main
 var _ Callable = (*LoxFunction)(nil)
 
 type LoxFunction struct {
-	decl    *Function
-	closure *Environment
+	decl          *Function
+	closure       *Environment
+	isInitializer bool
 }
 
-func NewLoxFunction(decl *Function, closure *Environment) *LoxFunction {
+func NewLoxFunction(decl *Function, closure *Environment, isInitializer bool) *LoxFunction {
 	return &LoxFunction{
-		decl:    decl,
-		closure: closure,
+		decl:          decl,
+		closure:       closure,
+		isInitializer: isInitializer,
 	}
 }
 
@@ -21,7 +23,12 @@ func (f *LoxFunction) Call(itrp *Interpreter, arguments []any) (ret any) {
 		if r := recover(); r != nil {
 			retex, ok := r.(ReturnException)
 			if ok {
-				ret = retex.Value
+
+				if f.isInitializer {
+					f.closure.getAt(0, "this")
+				} else {
+					ret = retex.Value
+				}
 			}
 		}
 	}()
@@ -34,6 +41,11 @@ func (f *LoxFunction) Call(itrp *Interpreter, arguments []any) (ret any) {
 	}
 
 	itrp.executeBlock(f.decl.Body, env)
+
+	if f.isInitializer {
+		ret = f.closure.getAt(0, "this")
+	}
+
 	return ret
 }
 
@@ -48,5 +60,5 @@ func (c *LoxFunction) String() string {
 func (c *LoxFunction) bind(instance *LoxInstance) *LoxFunction {
 	env := NewEnvironmentFrom(c.closure)
 	env.define("this", instance)
-	return NewLoxFunction(c.decl, env)
+	return NewLoxFunction(c.decl, env, c.isInitializer)
 }

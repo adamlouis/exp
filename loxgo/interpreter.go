@@ -321,7 +321,7 @@ func (itrp *Interpreter) VisitWhile(stmt *While) any {
 }
 
 func (itrp *Interpreter) VisitFunction(stmt *Function) any {
-	f := NewLoxFunction(stmt, itrp.env)
+	f := NewLoxFunction(stmt, itrp.env, false)
 	itrp.env.define(stmt.Name.lexeme, f)
 	return nil
 }
@@ -346,7 +346,7 @@ func (itrp *Interpreter) VisitClass(stmt *Class) any {
 	methods := map[string]*LoxFunction{}
 	for _, method := range stmt.Methods {
 		fn := method.Function
-		lfn := NewLoxFunction(fn, itrp.env)
+		lfn := NewLoxFunction(fn, itrp.env, fn.Name.lexeme == "init")
 		methods[fn.Name.lexeme] = lfn
 	}
 
