@@ -1,1 +1,1 @@
-https://craftinginterpreters.com/inheritance.html
+https://craftinginterpreters.com/inheritance.html#invalid-uses-of-super

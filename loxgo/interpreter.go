@@ -115,6 +115,20 @@ func (itrp *Interpreter) VisitSet(expr *Set) any {
 	loxi.Set(expr.Name, value)
 	return value
 }
+func (itrp *Interpreter) VisitSuper(expr *Super) any {
+	distance := itrp.locals[Expr{Super: expr}]
+
+	superclass := (itrp.env.getAt(distance, "super")).(*LoxClass)
+	object := itrp.env.getAt(distance-1, "this").(*LoxInstance)
+	method := superclass.findMethod(expr.Method.lexeme)
+
+	if method == nil {
+		panic(expr.Method.String() + ": Undefined property '" + expr.Method.lexeme + "'.")
+	}
+
+	return method.bind(object)
+}
+
 func (itrp *Interpreter) VisitAssign(expr *Assign) any {
 	value := itrp.evaluate(expr.Value)
 	super := Expr{Assign: expr}
@@ -341,7 +355,24 @@ func (itrp *Interpreter) resolve(expr Expr, depth int) {
 }
 
 func (itrp *Interpreter) VisitClass(stmt *Class) any {
+
+	var superclass *LoxClass
+	if stmt.SuperClass != nil {
+		result := itrp.evaluate(&Expr{Variable: stmt.SuperClass})
+
+		lc, ok := result.(*LoxClass)
+		if !ok {
+			panic(stmt.SuperClass.Name.lexeme + ": Superclass must be a class.")
+		}
+		superclass = lc
+	}
+
 	itrp.env.define(stmt.Name.lexeme, nil)
+
+	if stmt.SuperClass != nil {
+		itrp.env = NewEnvironmentFrom(itrp.env)
+		itrp.env.define("super", superclass)
+	}
 
 	methods := map[string]*LoxFunction{}
 	for _, method := range stmt.Methods {
@@ -350,7 +381,12 @@ func (itrp *Interpreter) VisitClass(stmt *Class) any {
 		methods[fn.Name.lexeme] = lfn
 	}
 
-	klass := NewLoxClass(stmt.Name.lexeme, methods)
+	klass := NewLoxClass(stmt.Name.lexeme, superclass, methods)
+
+	if superclass != nil {
+		itrp.env = itrp.env.enclosing
+	}
+
 	itrp.env.assign(stmt.Name, klass)
 	return nil
 }

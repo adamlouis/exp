@@ -67,6 +67,10 @@ func (r *Resolver) VisitSet(expr *Set) any {
 	r.resolveExpr(expr.Object)
 	return nil
 }
+func (r *Resolver) VisitSuper(expr *Super) any {
+	r.resolveLocal(Expr{Super: expr}, expr.Keyword)
+	return nil
+}
 func (r *Resolver) VisitThis(expr *This) any {
 	if r.currentClass == ClassType_NONE {
 		r.lox.error(expr.Keyword, "Can't use 'this' outside of a class.")
@@ -166,6 +170,20 @@ func (r *Resolver) VisitClass(stmt *Class) any {
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
 
+	if stmt.SuperClass != nil && stmt.Name.lexeme == stmt.SuperClass.Name.lexeme {
+		r.lox.error(stmt.SuperClass.Name, "A class can't inherit from itself.")
+	}
+
+	if stmt.SuperClass != nil {
+		r.resolveExpr(&Expr{Variable: stmt.SuperClass})
+	}
+
+	if stmt.SuperClass != nil {
+		r.beginScope()
+		last := r.scopes[len(r.scopes)-1]
+		last["super"] = true
+	}
+
 	r.beginScope()
 
 	last := r.scopes[len(r.scopes)-1]
@@ -179,6 +197,10 @@ func (r *Resolver) VisitClass(stmt *Class) any {
 		r.resolveFunction(method.Function, declaration)
 	}
 	r.endScope()
+
+	if stmt.SuperClass != nil {
+		r.endScope()
+	}
 
 	r.currentClass = enclosing
 	return nil

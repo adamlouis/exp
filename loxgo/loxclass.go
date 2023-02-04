@@ -3,12 +3,13 @@ package main
 var _ Callable = (*LoxClass)(nil)
 
 type LoxClass struct {
-	name    string
-	methods map[string]*LoxFunction
+	name       string
+	superClass *LoxClass
+	methods    map[string]*LoxFunction
 }
 
-func NewLoxClass(name string, methods map[string]*LoxFunction) *LoxClass {
-	return &LoxClass{name, methods}
+func NewLoxClass(name string, superClass *LoxClass, methods map[string]*LoxFunction) *LoxClass {
+	return &LoxClass{name, superClass, methods}
 }
 
 func (lc LoxClass) String() string {
@@ -35,5 +36,14 @@ func (lc *LoxClass) Arity() int {
 }
 
 func (lc *LoxClass) findMethod(name string) *LoxFunction {
-	return lc.methods[name]
+	v, ok := lc.methods[name]
+	if ok {
+		return v
+	}
+
+	if lc.superClass != nil {
+		return lc.superClass.findMethod(name)
+	}
+
+	return nil
 }

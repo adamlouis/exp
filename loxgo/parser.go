@@ -46,6 +46,13 @@ func (p *Parser) declaration() (ret *Stmt) {
 
 func (p *Parser) classDeclaration() *Stmt {
 	name := p.consume(TokenType_IDENTIFIER, "Expect class name.")
+
+	var superclass *Variable
+	if p.match(TokenType_LESS) {
+		p.consume(TokenType_IDENTIFIER, "Expect superclass name.")
+		superclass = &Variable{p.previous()}
+	}
+
 	p.consume(TokenType_LEFT_BRACE, "Expect '{' before class body.")
 
 	methods := []*Stmt{}
@@ -55,7 +62,7 @@ func (p *Parser) classDeclaration() *Stmt {
 
 	p.consume(TokenType_RIGHT_BRACE, "Expect '}' after class body.")
 
-	return &Stmt{Class: &Class{name, methods}}
+	return &Stmt{Class: &Class{name, superclass, methods}}
 }
 
 func (p *Parser) varDeclaration() *Stmt {
@@ -408,6 +415,14 @@ func (p *Parser) primary() *Expr {
 	if p.match(TokenType_NUMBER, TokenType_STRING) {
 		return &Expr{Literal: &Literal{Value: p.previous().literal}}
 	}
+
+	if p.match(TokenType_SUPER) {
+		keyword := p.previous()
+		p.consume(TokenType_DOT, "Expect '.' after 'super'.")
+		method := p.consume(TokenType_IDENTIFIER, "Expect superclass method name.")
+		return &Expr{Super: &Super{keyword, method}}
+	}
+
 	if p.match(TokenType_THIS) {
 		return &Expr{This: &This{Keyword: p.previous()}}
 	}

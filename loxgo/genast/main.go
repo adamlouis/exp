@@ -54,6 +54,10 @@ func main() {
 		{"This", []string{
 			"Keyword *Token",
 		}},
+		{"Super", []string{
+			"Keyword *Token",
+			"Method *Token",
+		}},
 		{"Logical", []string{
 			"Left *Expr",
 			"Operator *Token",
@@ -105,6 +109,7 @@ func main() {
 		}},
 		{"Class", []string{
 			"Name *Token",
+			"SuperClass *Variable",
 			"Methods []*Stmt",
 		}},
 	}); err != nil {

@@ -44,8 +44,9 @@ type Block struct {
 	Statements []*Stmt
 }
 type Class struct {
-	Name    *Token
-	Methods []*Stmt
+	Name       *Token
+	SuperClass *Variable
+	Methods    []*Stmt
 }
 type VisitorStmt interface {
 	VisitExpression(expr *Expression) any
