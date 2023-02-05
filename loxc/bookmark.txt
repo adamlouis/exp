@@ -1,1 +1,1 @@
-https://craftinginterpreters.com/scanning-on-demand.html
+https://craftinginterpreters.com/compiling-expressions.html

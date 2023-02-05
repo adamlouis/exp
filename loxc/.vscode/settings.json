@@ -2,6 +2,7 @@
   "files.associations": {
     "chunk.h": "c",
     "debug.h": "c",
-    "common.h": "c"
+    "common.h": "c",
+    "streambuf": "c"
   }
 }
