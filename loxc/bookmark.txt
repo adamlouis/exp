@@ -1,1 +1,1 @@
-https://craftinginterpreters.com/compiling-expressions.html
+https://craftinginterpreters.com/types-of-values.html

@@ -3,6 +3,7 @@
     "chunk.h": "c",
     "debug.h": "c",
     "common.h": "c",
-    "streambuf": "c"
+    "streambuf": "c",
+    "system_error": "c"
   }
 }
