@@ -4,6 +4,12 @@
     "debug.h": "c",
     "common.h": "c",
     "streambuf": "c",
-    "system_error": "c"
+    "system_error": "c",
+    "array": "cpp",
+    "functional": "cpp",
+    "tuple": "cpp",
+    "type_traits": "cpp",
+    "utility": "cpp",
+    "string_view": "c"
   }
 }
