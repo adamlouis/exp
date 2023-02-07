@@ -12,6 +12,7 @@
     "utility": "cpp",
     "string_view": "c",
     "vector": "c",
-    "string": "c"
+    "string": "c",
+    "typeinfo": "c"
   }
 }
