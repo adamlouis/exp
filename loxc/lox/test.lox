@@ -1,0 +1,19 @@
+{
+    var s = "outer";
+    {
+        var s = "inner";
+        print s;
+    }
+    print s;
+}
+
+var a = 5;
+
+print (1+2) / 3 * 5;
+
+var b = 3;
+var c = 4;
+
+print a*a;
+print b*b + c*c;
+print a*a == b*b + c*c;
