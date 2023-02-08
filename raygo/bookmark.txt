@@ -1,0 +1,1 @@
+3. The vec3 Class
