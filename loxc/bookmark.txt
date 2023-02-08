@@ -1,3 +1,3 @@
-https://craftinginterpreters.com/local-variables.html
+https://craftinginterpreters.com/jumping-back-and-forth.html
 
 TODO: segfault on 2 repl exprs

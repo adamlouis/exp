@@ -13,6 +13,7 @@
     "string_view": "c",
     "vector": "c",
     "string": "c",
-    "typeinfo": "c"
+    "typeinfo": "c",
+    "compare": "c"
   }
 }
