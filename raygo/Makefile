@@ -2,7 +2,7 @@
 
 
 display: FORCE
-	go run main.go > image.ppm
+	go run . > image.ppm
 	display image.ppm
 
 FORCE: ;
