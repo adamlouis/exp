@@ -1,1 +1,1 @@
-https://craftinginterpreters.com/calls-and-functions.html
+https://craftinginterpreters.com/calls-and-functions.html#function-calls
