@@ -23,7 +23,7 @@ const PCT3V2_DW2: f64 = 2275.0 / 7776.0;
 // percent attacker splits 1:1 with defender in 3 vs. 2
 const PCT3V2_SP: f64 = 2611.0 / 7776.0;
 
-// battle_prob returns the probability that attacker wins
+// return the probability that attacker wins
 fn battle_prob(a: u8, d: u8, cache: &mut HashMap<(u8, u8), f64>) -> f64 {
     if let Some(v) = cache.get(&(a, d)) {
         return *v;
@@ -33,7 +33,7 @@ fn battle_prob(a: u8, d: u8, cache: &mut HashMap<(u8, u8), f64>) -> f64 {
         panic!("unreachable: a & d must not both be 0!");
     }
 
-    // declare as anonymous fn so can cache the result easily
+    // declare as anonymous fn to cache
     let ret = || -> f64 {
         if a == 0 {
             return 0.0;
@@ -135,6 +135,7 @@ fn clamp(n: u8, min: u8, max: u8) -> u8 {
     n
 }
 
+// returns true if attacker wins
 fn simulate_battle(attackers: u8, defenders: u8) -> bool {
     let mut remaining_a = attackers;
     let mut remaining_d = defenders;
@@ -151,7 +152,7 @@ fn simulate_battle(attackers: u8, defenders: u8) -> bool {
 }
 
 fn main() {
-    println!("battle probabilties ---------------------------------------------------------------");
+    println!("battle probabilties (computed) ---------------------------------------------------------------");
     let size = 35u8;
     let mut cache: HashMap<(u8, u8), f64> = HashMap::new();
     for d in 1..(size + 1) {
